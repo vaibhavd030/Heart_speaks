@@ -35,3 +35,6 @@ logs/
 # Data
 data/**/*.pdf
 data/*.pdf
+
+# LLM Semantic Cache
+.cache/

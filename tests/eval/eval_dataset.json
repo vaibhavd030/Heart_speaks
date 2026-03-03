@@ -1,0 +1,22 @@
+[
+    {
+        "question": "What does the text suggest is necessary for the world to return to non-destructive methods?",
+        "ground_truth": "A massive cataclysm is suggested as necessary for the world to return to non-destructive methods."
+    },
+    {
+        "question": "What must the elected humanity do to achieve the divine elevation that is desired and planned?",
+        "ground_truth": "The elected humanity must abide by strict rules and get rid of its wall of defects of all kinds that hampers an elevation that is divinely desired and planned."
+    },
+    {
+        "question": "What is said about the celebration mentioned in the text and its significance to people in different countries?",
+        "ground_truth": "The celebration is described as beautiful and is acknowledged not only in India but also in all countries where brothers and sisters feel it concerns them, indicating its global significance and the divine will that justifies it in relation to what is good for humans."
+    },
+    {
+        "question": "What criterion will be used to assess human beings' stay on Earth according to the text?",
+        "ground_truth": "The assessment will be done according to whether they were able to face up to things, in what state of mind they settled their accounts, if they kept faith and confidence, and if they were grateful for what they received."
+    },
+    {
+        "question": "What is emphasized as a necessity for certain truths to prevail in minds according to Babuji Maharaj?",
+        "ground_truth": "Repetition is emphasized as a necessity for certain truths to prevail in minds."
+    }
+]

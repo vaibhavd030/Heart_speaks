@@ -1,4 +1,4 @@
-# Hub Health — AI Project Instructions
+# Heart Speaks — AI Project Instructions
 
 > **Goal:** Get a working POC up fast. A chatbot that reads podcast transcripts (JSON) and answers questions with precise citations.
 
@@ -44,7 +44,7 @@ Create `pyproject.toml` first — this is the single source of truth for depende
 
 ```toml
 [project]
-name = "hub-health"
+name = "heart-speaks"
 version = "0.1.0"
 description = "RAG chatbot over podcast transcripts"
 requires-python = ">=3.11"
@@ -132,7 +132,7 @@ smoke:
 ci: lint typecheck test
 
 run:
-	PYTHONPATH=src uv run streamlit run src/hub_health/app.py
+	PYTHONPATH=src uv run streamlit run src/heart_speaks/app.py
 
 clean:
 	rm -rf .venv __pycache__ .mypy_cache .ruff_cache .pytest_cache
@@ -213,7 +213,7 @@ except openai.OpenAIError as e:
 
 - **Langchain refactors**: Ensure text splitters are imported from their modern packages (e.g., `from langchain_text_splitters import RecursiveCharacterTextSplitter` rather than `langchain.text_splitters`).
 - **Typing imports**: Be diligent with adding `from typing import Any` and `from typing import List` when types are utilized, AI often forgets these.
-- **PYTHONPATH**: When running entry points (like `pytest`, `streamlit run`, or custom scripts inside the `src` folder), ensure they run with `PYTHONPATH=src` to correctly resolve absolute imports against the `src/` layout (e.g., `from hub_health.config import settings`).
+- **PYTHONPATH**: When running entry points (like `pytest`, `streamlit run`, or custom scripts inside the `src` folder), ensure they run with `PYTHONPATH=src` to correctly resolve absolute imports against the `src/` layout (e.g., `from heart_speaks.config import settings`).
 
 ---
 

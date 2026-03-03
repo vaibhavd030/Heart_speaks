@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     data_dir: str = Field("./data", description="Data directory containing PDF documents")
     log_level: str = Field("INFO", description="Logging level")
     
+    # Caching
+    enable_llm_cache: bool = Field(True, description="Enable LLM caching")
+    cache_dir: str = Field(".cache", description="Directory for LLM cache")
+    
     # RAG parameters
     chunk_size: int = Field(1000, description="Chunk size for document splitting")
     chunk_overlap: int = Field(200, description="Chunk overlap for document splitting")

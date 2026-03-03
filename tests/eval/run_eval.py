@@ -4,10 +4,11 @@ import sys
 # Ensure src in path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
+import json
 from datasets import Dataset
 from langchain_core.messages import HumanMessage
 from ragas import evaluate
-from ragas.metrics import answer_relevancy, faithfulness
+from ragas.metrics.collections import answer_relevancy, faithfulness, context_precision, context_recall
 
 from heart_speaks.graph import app
 
@@ -35,10 +36,19 @@ eval_dataset = [
     }
 ]
 
+def load_dataset():
+    dataset_path = os.path.join(os.path.dirname(__file__), "eval_dataset.json")
+    if os.path.exists(dataset_path):
+        with open(dataset_path, "r") as f:
+            return json.load(f)
+    print("Using default small dataset. Generate more using generate_dataset.py.")
+    return eval_dataset
+
 def generate_answers_for_eval():
     data = {"question": [], "answer": [], "contexts": [], "ground_truth": []}
     
-    for item in eval_dataset:
+    current_dataset = load_dataset()
+    for item in current_dataset:
         q = item["question"]
         inputs = {"messages": [HumanMessage(content=q)]}
         result = app.invoke(inputs)
@@ -63,7 +73,7 @@ def run_ragas_evaluation():
     print("Running Ragas evaluation...")
     result = evaluate(
         dataset,
-        metrics=[answer_relevancy, faithfulness],
+        metrics=[answer_relevancy, faithfulness, context_precision, context_recall],
     )
     
     print("Evaluation Results:")
@@ -73,6 +83,33 @@ def run_ragas_evaluation():
     df = result.to_pandas()
     df.to_csv("logs/eval_metrics.csv", index=False)
     print("Saved detailed metrics to logs/eval_metrics.csv")
+    
+    # Enforce strict thresholds from improvement.md
+    thresholds = {
+        "context_precision": 0.80,
+        "context_recall": 0.75,
+        "faithfulness": 0.85,
+        "answer_relevancy": 0.80,
+    }
+    
+    failed = False
+    print("\n--- Threshold Check ---")
+    
+    # Extract overall metrics from the result object (Ragas 0.1.x compatible)
+    # result behaves like a dictionary of aggregated scores
+    for metric_name, required_score in thresholds.items():
+        actual_score = result.get(metric_name, 0.0)
+        status = "✅ PASS" if actual_score >= required_score else "❌ FAIL"
+        print(f"{metric_name}: {actual_score:.3f} (Required: {required_score}) -> {status}")
+        
+        if actual_score < required_score:
+            failed = True
+            
+    if failed:
+        print("\nERROR: One or more evaluation metrics failed to meet the strict thresholds!")
+        sys.exit(1)
+    else:
+        print("\nSUCCESS: All evaluation metrics met the required thresholds.")
 
 if __name__ == "__main__":
     if "OPENAI_API_KEY" not in os.environ:
