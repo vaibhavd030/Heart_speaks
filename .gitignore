@@ -1,0 +1,37 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distributions
+*.egg-info/
+dist/
+build/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Testing and formatting
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Project specific
+chroma_db/
+logs/
+
+# Data
+data/**/*.pdf
+data/*.pdf
