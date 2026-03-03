@@ -38,3 +38,7 @@ data/*.pdf
 
 # LLM Semantic Cache
 .cache/
+
+# Project instructions
+improvement.md
+instructions.md
