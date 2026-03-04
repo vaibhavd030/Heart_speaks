@@ -115,23 +115,56 @@ export function ChatInterface() {
         }
     };
 
-    const handleDownloadPDF = (content: string, sources?: Source[]) => {
+    const handleDownloadPDF = (question: string, content: string, sources?: Source[]) => {
         import('jspdf').then(({ jsPDF }) => {
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
             const margin = 20;
             const contentWidth = pageWidth - (margin * 2);
             let yPosition = 20;
 
+            // Background color (paper/parchment mimic)
+            doc.setFillColor(253, 251, 247); // #fdfbf7
+            doc.rect(0, 0, pageWidth, pageHeight, "F");
+
+            // Text Color (ink mimic)
+            doc.setTextColor(26, 21, 27); // #1a151b
+
             // Title
             doc.setFont("times", "italic");
-            doc.setFontSize(24);
+            doc.setFontSize(28);
             doc.text("SAGE", pageWidth / 2, yPosition, { align: "center" });
             yPosition += 10;
 
             doc.setFontSize(12);
             doc.text("Spiritual Archive Guidance Engine", pageWidth / 2, yPosition, { align: "center" });
+
+            // Divider Line
+            yPosition += 8;
+            doc.setDrawColor(212, 175, 55); // #d4af37 (gold accent)
+            doc.setLineWidth(0.5);
+            doc.line(pageWidth / 2 - 20, yPosition, pageWidth / 2 + 20, yPosition);
             yPosition += 20;
+
+            // User Question Area
+            doc.setFont("times", "normal");
+            doc.setFontSize(14);
+            const splitQuestion = doc.splitTextToSize(question, contentWidth);
+            const questionHeight = (splitQuestion.length * 7) + 15;
+
+            doc.setFillColor(245, 240, 235); // Lighter bubble
+            doc.roundedRect(margin - 5, yPosition - 8, contentWidth + 10, questionHeight, 3, 3, "F");
+
+            doc.setFont("times", "italic");
+            doc.setTextColor(100, 80, 85);
+            doc.text(`Seeker asks:`, margin, yPosition);
+            yPosition += 8;
+
+            doc.setFont("times", "normal");
+            doc.setTextColor(26, 21, 27);
+            doc.text(splitQuestion, margin, yPosition);
+            yPosition += questionHeight - 5;
 
             // Response Content
             doc.setFont("times", "normal");
@@ -145,6 +178,8 @@ export function ChatInterface() {
                 // Check if we need a new page
                 if (yPosition > doc.internal.pageSize.getHeight() - 60) {
                     doc.addPage();
+                    doc.setFillColor(253, 251, 247); // Refill background for new page
+                    doc.rect(0, 0, pageWidth, pageHeight, "F");
                     yPosition = 20;
                 }
 
@@ -163,6 +198,8 @@ export function ChatInterface() {
 
                     if (yPosition + (splitSource.length * 5) > doc.internal.pageSize.getHeight() - 20) {
                         doc.addPage();
+                        doc.setFillColor(253, 251, 247); // Refill background for new page
+                        doc.rect(0, 0, pageWidth, pageHeight, "F");
                         yPosition = 20;
                     }
 
@@ -173,10 +210,12 @@ export function ChatInterface() {
 
             // Footer
             const dateStr = new Date().toLocaleDateString();
-            doc.setFontSize(8);
+            doc.setFontSize(10);
+            doc.setFont("times", "italic");
+            doc.setTextColor(150, 150, 150);
             doc.text(`Generated on ${dateStr}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
 
-            doc.save("sage-guidance.pdf");
+            doc.save(`SAGE-Guidance-${dateStr.replace(/\//g, '-')}.pdf`);
         });
     };
 
@@ -242,7 +281,13 @@ export function ChatInterface() {
                                         <div className="relative">
                                             {/* Download Button */}
                                             <button
-                                                onClick={() => handleDownloadPDF(msg.content, msg.sources)}
+                                                onClick={() => {
+                                                    const previousMessage = messages[idx - 1];
+                                                    const questionText = previousMessage && previousMessage.role === 'user'
+                                                        ? previousMessage.content
+                                                        : "Seeker's guidance inquiry";
+                                                    handleDownloadPDF(questionText, msg.content, msg.sources);
+                                                }}
                                                 className="absolute -top-2 -right-2 p-2 text-ink/40 hover:text-gold-accent transition-colors"
                                                 title="Download as PDF"
                                             >
