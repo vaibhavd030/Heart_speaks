@@ -40,5 +40,6 @@ data/*.pdf
 
 # Project instructions
 improvement.md
+improvementv2.md
 instructions.md
 data/messages.db
