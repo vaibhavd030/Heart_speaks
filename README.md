@@ -15,14 +15,47 @@ Heart Speaks is a production-grade RAG (Retrieval-Augmented Generation) chatbot 
 - **Message Repository**: Utilizes a standalone **SQLite** database (`messages.db`) to map semantic chunks back to their full-text original source, ensuring citations expand to provide maximum context including date and parsed author signature.
 - **Evaluation**: Enforces strict **Ragas** metric thresholds over a golden dataset.
 
-## 3. Ragas Evaluation Metrics (Latest)
+## 3. Architecture Diagram
+
+```mermaid
+graph TD
+    %% Ingestion Flow
+    A[Spiritual PDF Files] -->|PyPDF Loader + Content Hashing| B(Document Chunks)
+    A -->|Extract Bottom Signature| M[Author Metadata]
+    B -->|text-embedding-3-large| C[(ChromaDB)]
+    B -->|Keyword Term Frequencies| K[(BM25 Index Singleton)]
+    
+    B -->|Full Text + Metadata| DB[(SQLite messages.db)]
+    M --> DB
+    
+    %% Retrieval Flow
+    D[User Request] --> E{Next.js Frontend}
+    E -->|REST API /chat| F[FastAPI Server]
+    F -->|GraphState Messages| G[LangGraph Agent]
+    
+    G --> H{Moderation Check Node}
+    H -- Unsafe --> I[Refusal Message]
+    H -- Safe --> J[MultiQuery + Hybrid Retrieval Node]
+    
+    J <-->|Dense Search| C
+    J <-->|Sparse Search| K
+    J -->|FlashRank Reranking| L[Re-ordered Context]
+    
+    L -->|Context + Conversational History| N[Generation Node]
+    
+    N -->|GPT-4o Structured Output| O[Citation Enrichment]
+    O <-->|Fetch Full Text & True Author| DB
+    O -->|Rich Citation Cards| E
+```
+
+## 4. Ragas Evaluation Metrics (Latest)
 Our CI pipeline enforces strict thresholds over our golden datasets. The latest run achieved the following standard-setting metrics:
 *   **Faithfulness**: `1.000` (Perfect grounding; zero hallucinations)
 *   **Answer Relevancy**: `0.920` (Excellent structural synthesis)
 *   **Context Recall**: `0.800` (Exceptional retrieval capture)
 *   **Context Precision**: `0.766` (Highly accurate ranking)
 
-## 4. Full Folder Structure
+## 5. Full Folder Structure
 
 ```
 ├── Makefile             # Automation wrapper
@@ -54,7 +87,7 @@ Our CI pipeline enforces strict thresholds over our golden datasets. The latest 
         └── test_smoke.py  # End-to-end LangGraph integration tests
 ```
 
-## 5. Installation & Run Instructions
+## 6. Installation & Run Instructions
 
 **Prerequisites:** Assumes `uv` is installed globally (`curl -LsSf https://astral.sh/uv/install.sh | sh`), `npm` is installed, and `.env` file exists with the `OPENAI_API_KEY`.
 
@@ -82,6 +115,6 @@ npm install
 npm run dev
 ```
 
-## 6. Testing, Linting & CI
+## 7. Testing, Linting & CI
 - **GitHub Actions**: Automated CI pipeline runs `ruff` linting, `black` formatting, `mypy` type-checking, and `pytest` on all PRs.
 - **Ragas Evaluations**: `make eval` will fail CI blocks if your retrieval or language models dip below the strict quality bar defined in the script.
