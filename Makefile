@@ -35,5 +35,8 @@ eval:
 run-api:
 	PYTHONPATH=src uv run uvicorn heart_speaks.api:app --reload --port 8000
 
+start:
+	npx concurrently -k "make run-api" "cd frontend && npm run dev"
+
 clean:
 	rm -rf .venv __pycache__ .mypy_cache .ruff_cache .pytest_cache

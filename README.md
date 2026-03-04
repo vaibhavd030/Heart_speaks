@@ -91,30 +91,27 @@ Our CI pipeline enforces strict thresholds over our golden datasets. The latest 
 
 **Prerequisites:** Assumes `uv` is installed globally (`curl -LsSf https://astral.sh/uv/install.sh | sh`), `npm` is installed, and `.env` file exists with the `OPENAI_API_KEY`.
 
-### Local Development
+### Local Development (Quickstart)
 ```bash
-# Install all Python backend dependencies
+# 1. Install all backend dependencies
 make install
 
-# Idempotently ingest Data from your data/ folder to ChromaDB and SQLite
+# 2. Install frontend dependencies
+cd frontend && npm install && cd ..
+
+# 3. Idempotently ingest Data from your data/ folder to ChromaDB and SQLite
 make ingest
 
-# Run all strict unit and smoke tests
-make test
-make smoke
-
-# Run Evaluation using Ragas to verify quality metrics
-make eval
-
-# Start the FastAPI Backend
-make run-api
-
-# In a new terminal, start the Next.js Frontend
-cd frontend
-npm install
-npm run dev
+# 4. Start the Application (Spins up FastAPI and Next.js concurrently)
+make start
 ```
+*The Frontend will be available at `http://localhost:3000` and the Backend API at `http://localhost:8000`.*
 
+### Docker Deployment
+You can easily spin up the entire architecture (FastAPI Backend + Next.js Frontend) using Docker Compose:
+```bash
+docker-compose up --build -d
+```
 ## 7. Testing, Linting & CI
 - **GitHub Actions**: Automated CI pipeline runs `ruff` linting, `black` formatting, `mypy` type-checking, and `pytest` on all PRs.
 - **Ragas Evaluations**: `make eval` will fail CI blocks if your retrieval or language models dip below the strict quality bar defined in the script.
