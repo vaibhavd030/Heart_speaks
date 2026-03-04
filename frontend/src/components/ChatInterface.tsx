@@ -167,11 +167,43 @@ export function ChatInterface() {
             yPosition += questionHeight - 5;
 
             // Response Content
-            doc.setFont("times", "normal");
             doc.setFontSize(12);
-            const splitContent = doc.splitTextToSize(content, contentWidth);
-            doc.text(splitContent, margin, yPosition);
-            yPosition += (splitContent.length * 7) + 10;
+
+            const lines = content.split('\n');
+            lines.forEach(line => {
+                if (!line.trim()) {
+                    yPosition += 4;
+                    return;
+                }
+
+                let isBold = false;
+                let cleanLine = line.trim();
+
+                // If it's a bold heading
+                if (cleanLine.startsWith('**') && cleanLine.endsWith('**')) {
+                    isBold = true;
+                    cleanLine = cleanLine.substring(2, cleanLine.length - 2);
+                } else {
+                    // Strip asterisks if they appear anywhere else inline
+                    cleanLine = cleanLine.replace(/\*\*/g, '');
+                }
+
+                doc.setFont("times", isBold ? "bold" : "normal");
+                const splitContent = doc.splitTextToSize(cleanLine, contentWidth);
+
+                // Auto-page wrapping for long responses
+                if (yPosition + (splitContent.length * 7) > pageHeight - 40) {
+                    doc.addPage();
+                    doc.setFillColor(253, 251, 247);
+                    doc.rect(0, 0, pageWidth, pageHeight, "F");
+                    yPosition = 20;
+                }
+
+                doc.text(splitContent, margin, yPosition);
+                yPosition += (splitContent.length * 7) + 4;
+            });
+
+            yPosition += 6;
 
             // Sources
             if (sources && sources.length > 0) {
