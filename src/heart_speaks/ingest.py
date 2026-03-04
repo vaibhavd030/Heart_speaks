@@ -99,18 +99,28 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
     # Insert full texts into repository
     logger.info("Upserting full messages into SQLite repository...")
     for filename, data in docs_by_file.items():
-        # Extrapolate generic author hint based on Heartfulness context if needed
+        full_text_str = str(data["text"])
+        
+        # Extract author signature from the last non-empty line
         author = "Spiritual Guide"
-        if "babuji" in filename.lower(): 
-            author = "Babuji"
-        elif "chariji" in filename.lower(): 
-            author = "Chariji"
-        elif "daaji" in filename.lower(): 
-            author = "Daaji"
+        lines = [line.strip() for line in full_text_str.split('\n') if line.strip()]
+        if lines:
+            extracted = lines[-1]
+            if len(extracted) < 50:  # Safety check to avoid treating long paragraphs as a signature
+                author = extracted
+
+        # Extrapolate generic author hint based on filename as a fallback
+        if author == "Spiritual Guide":
+            if "babuji" in filename.lower(): 
+                author = "Babuji"
+            elif "chariji" in filename.lower(): 
+                author = "Chariji"
+            elif "daaji" in filename.lower(): 
+                author = "Daaji"
             
         upsert_message(
             source_file=filename,
-            full_text=str(data["text"]),
+            full_text=full_text_str,
             author=author,
             date=str(data["date"]),
             page_count=int(data["pages"]) # type: ignore
