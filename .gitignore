@@ -30,7 +30,6 @@ env/
 
 # Project specific
 chroma_db/
-logs/
 
 # Data
 data/**/*.pdf

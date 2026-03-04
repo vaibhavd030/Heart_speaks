@@ -32,9 +32,6 @@ eval:
 	mkdir -p logs
 	PYTHONPATH=src uv run python tests/eval/run_eval.py
 
-run:
-	PYTHONPATH=src uv run streamlit run src/heart_speaks/app.py
-
 run-api:
 	PYTHONPATH=src uv run uvicorn heart_speaks.api:app --reload --port 8000
 

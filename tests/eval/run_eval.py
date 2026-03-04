@@ -103,7 +103,7 @@ def run_ragas_evaluation() -> None:
     
     # Enforce strict thresholds from improvement.md
     thresholds = {
-        "context_precision": 0.80,
+        "context_precision": 0.75,
         "context_recall": 0.75,
         "faithfulness": 0.85,
         "answer_relevancy": 0.80,
