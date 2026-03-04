@@ -1,11 +1,11 @@
-import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from langchain_core.documents import Document
 
 from heart_speaks.ingest import extract_datetime_from_filename, ingest_data
 
 
-def test_extract_datetime_from_filename():
+def test_extract_datetime_from_filename() -> None:
     """Test extraction of date from filenames."""
     assert extract_datetime_from_filename("Discourse_2023-05-12.pdf") == "2023-05-12"
     assert extract_datetime_from_filename("2020-01-01_talk.pdf") == "2020-01-01"
@@ -14,7 +14,7 @@ def test_extract_datetime_from_filename():
 @patch('heart_speaks.ingest.get_vector_store')
 @patch('heart_speaks.ingest.glob')
 @patch('heart_speaks.ingest.PyPDFLoader')
-def test_ingest_data(mock_loader, mock_glob, mock_get_store):
+def test_ingest_data(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_store: MagicMock) -> None:
     """Test the ingestion pipeline's core loops."""
     # Mock finding files
     mock_glob.glob.return_value = ["fake_dir/fake1.pdf"]
@@ -41,11 +41,11 @@ def test_ingest_data(mock_loader, mock_glob, mock_get_store):
 @patch('heart_speaks.ingest.get_vector_store')
 @patch('heart_speaks.ingest.glob')
 @patch('heart_speaks.ingest.PyPDFLoader')
-def test_ingest_data_exception_handling(mock_loader, mock_glob, mock_get_store):
+def test_ingest_data_exception_handling(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_store: MagicMock) -> None:
     """Test that ingestion continues if one document fails to load."""
     mock_glob.glob.return_value = ["fake_dir/good.pdf", "fake_dir/bad.pdf"]
     
-    def side_effect(path):
+    def side_effect(path: str) -> MagicMock:
         if "bad" in path:
             raise ValueError("Corrupted PDF")
         mock_instance = MagicMock()

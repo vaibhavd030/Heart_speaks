@@ -1,12 +1,11 @@
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage
 from loguru import logger
+from openai import OpenAIError
+from pydantic import ValidationError
 
 from heart_speaks.graph import app as rag_app
 
-
-from openai import OpenAIError
-from pydantic import ValidationError
 
 def main() -> None:
     """Main entry point for the Streamlit application.
@@ -47,34 +46,55 @@ def main() -> None:
         
         with st.chat_message("assistant"):
             try:
+                import asyncio
+                from typing import Any, AsyncGenerator
+
+                async def run_chat() -> dict[str, Any]:
+                    inputs = {"messages": st.session_state.messages}
+                    final_resp_dict: dict[str, Any] = {}
+                    
+                    with st.status("Analyzing...", expanded=True) as status_ui:
+                        text_ui = st.empty()
+                        try:
+                            async for event in rag_app.astream_events(inputs, version="v2"):
+                                kind = event["event"]
+                                name = event.get("name")
+                                
+                                if kind == "on_chain_start" and name == "check_prompt_injection":
+                                    status_ui.write("✅ Checking prompt safety...")
+                                elif kind == "on_chain_start" and name == "retrieve":
+                                    status_ui.write("🔍 Searching spiritual teachings...")
+                                elif kind == "on_chain_start" and name == "generate":
+                                    status_ui.write("✨ Distilling wisdom...")
+                                    
+                                elif kind == "on_parser_stream":
+                                    chunk = event["data"]["chunk"]
+                                    if isinstance(chunk, dict) and "answer" in chunk:
+                                        text_ui.markdown(chunk["answer"])
+                                        
+                                elif kind == "on_chain_end" and name == "generate":
+                                    final_outputs: Any = event["data"].get("output", {})
+                                    if isinstance(final_outputs, dict):
+                                        final_resp_dict = final_outputs.get("final_response", {})
+                        except Exception:
+                            logger.exception("Stream error")
+                            
+                        status_ui.update(label="Response ready", state="complete", expanded=False)
+                        
+                    return final_resp_dict
+
+                final_resp = asyncio.run(run_chat())
+                
+                answer = final_resp.get("answer", "I could not generate an answer.")
+                citations = final_resp.get("citations", [])
+                
                 import time
-                def stream_data(text):
+                from typing import Generator
+                def stream_data(text: str) -> Generator[str, None, None]:
                     for word in text.split(" "):
                         yield word + " "
                         time.sleep(0.04)
 
-                inputs = {"messages": st.session_state.messages}
-                
-                # Stream the state updates to provide UI feedback
-                final_state = None
-                with st.status("Analyzing...", expanded=True) as status:
-                    for output in rag_app.stream(inputs):
-                        for node_name, state_update in output.items():
-                            if node_name == "check_prompt_injection":
-                                st.write("✅ Checking prompt safety...")
-                            elif node_name == "retrieve":
-                                st.write("🔍 Searching spiritual teachings...")
-                            elif node_name == "generate":
-                                st.write("✨ Distilling wisdom...")
-                            elif node_name == "unsafe_response":
-                                st.write("⚠️ Safety boundary triggered.")
-                            final_state = state_update
-                    status.update(label="Response ready", state="complete", expanded=False)
-                
-                final_resp = final_state.get("final_response", {}) if final_state else {}
-                answer = final_resp.get("answer", "I could not generate an answer.")
-                citations = final_resp.get("citations", [])
-                
                 st.write_stream(stream_data(answer))
                 
                 if citations:

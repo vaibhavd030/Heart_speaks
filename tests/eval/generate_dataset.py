@@ -1,23 +1,27 @@
-import os
-import sys
 import json
+import os
 import random
+import sys
+
 from loguru import logger
 from pydantic import BaseModel, Field
 
 # Ensure src in path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
 from heart_speaks.config import settings
 from heart_speaks.ingest import get_vector_store
+from typing import Any
+
 
 class QAPair(BaseModel):
     question: str = Field(description="A question that can be fully answered using ONLY the provided text.")
     ground_truth: str = Field(description="The correct answer to the question based ONLY on the provided text.")
 
-def generate_synthetic_dataset(num_questions: int = 50, output_file: str = "eval_dataset.json"):
+def generate_synthetic_dataset(num_questions: int = 50, output_file: str = "eval_dataset.json") -> None:
     vectorstore = get_vector_store()
     
     # Try to get existing documents
@@ -38,7 +42,8 @@ def generate_synthetic_dataset(num_questions: int = 50, output_file: str = "eval
     num_samples = min(num_questions, len(docs))
     sampled_docs = random.sample(docs, num_samples)
     
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, api_key=settings.openai_api_key)
+    from pydantic import SecretStr
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, api_key=SecretStr(settings.openai_api_key))
     structured_llm = llm.with_structured_output(QAPair)
     
     prompt = ChatPromptTemplate.from_messages([
@@ -56,7 +61,7 @@ def generate_synthetic_dataset(num_questions: int = 50, output_file: str = "eval
     # Check if existing dataset to append or overwrite
     output_path = os.path.join(os.path.dirname(__file__), output_file)
     if os.path.exists(output_path):
-        with open(output_path, "r") as f:
+        with open(output_path) as f:
             try:
                 dataset = json.load(f)
                 logger.info(f"Loaded {len(dataset)} existing questions from {output_file}")
@@ -68,7 +73,8 @@ def generate_synthetic_dataset(num_questions: int = 50, output_file: str = "eval
     
     for i, doc in enumerate(sampled_docs):
         try:
-            qa: QAPair = chain.invoke({"text": doc})
+            qa_result: Any = chain.invoke({"text": doc})
+            qa: QAPair = qa_result
             dataset.append({
                 "question": qa.question,
                 "ground_truth": qa.ground_truth

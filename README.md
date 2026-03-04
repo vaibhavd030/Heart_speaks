@@ -5,8 +5,8 @@ Heart Speaks is a production-grade RAG (Retrieval-Augmented Generation) chatbot 
 
 ## 2. Architecture & Features
 - **Dual Interfaces**: 
-  - **Streamlit**: A clean chat UI with simulated streaming and formatted citations.
-  - **FastAPI**: A headless REST API (`/chat`) for remote integrations, with metadata filtering support.
+  - **Next.js Frontend**: A beautiful, bespoke ChatUI with expanding full-text citation sources.
+  - **FastAPI**: A headless REST API (`/chat`) for remote integrations, with metadata filtering and session state support.
 - **Orchestration**: Built using **LangGraph**. Features an integrated prompt-injection validation guardrail (via OpenAI's Moderation API) and seamless conversational history routing.
 - **Advanced Retrieval**:
   - **Hybrid Search**: Uses `EnsembleRetriever` combining dense vector search (via ChromaDB) and sparse lexical search (BM25).
@@ -77,10 +77,10 @@ graph TD
 
 ### Local Development
 ```bash
-# Install all dependencies and initial setup
+# Install all Python backend dependencies
 make dev
 
-# Idempotently ingest Data from your data/ folder to ChromaDB
+# Idempotently ingest Data from your data/ folder to ChromaDB and SQLite
 make ingest
 
 # Run Pytest unit tests
@@ -89,8 +89,16 @@ uv run pytest tests/unit/ -v
 # Run Evaluation using RAGAS to verify quality thresholds
 make eval
 
-# Start the Streamlit App
-make run
+# Start the FastAPI Backend
+PYTHONPATH=src uv run uvicorn heart_speaks.api:app --host 0.0.0.0 --port 8000
+
+# Start the Streamlit App (Alternative Frontend)
+uv run streamlit run src/heart_speaks/app.py
+
+# In a new terminal, start the Next.js Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
 ### Docker Deployment

@@ -1,22 +1,22 @@
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 from heart_speaks.models import Citation, LLMResponse
 
 
-def test_citation_model_valid():
+def test_citation_model_valid() -> None:
     """Test valid instantiation of Citation model."""
     citation = Citation(source="doc.pdf", page=1, quote="test quote")
     assert citation.source == "doc.pdf"
     assert citation.page == 1
     assert citation.quote == "test quote"
 
-def test_citation_model_invalid():
+def test_citation_model_invalid() -> None:
     """Test invalid instantiation of Citation model."""
     with pytest.raises(ValidationError):
-        Citation(source="doc.pdf", page="one", quote="test quote")
+        Citation(source="doc.pdf", page="one", quote="test quote") # type: ignore
 
-def test_llm_response_model_valid():
+def test_llm_response_model_valid() -> None:
     """Test valid instantiation of LLMResponse model."""
     citation = Citation(source="doc.pdf", page=1, quote="test quote")
     response = LLMResponse(answer="test answer", citations=[citation])

@@ -1,9 +1,9 @@
-import os
-import re
 import glob
 import hashlib
-import pypdf
+import os
+import re
 
+import pypdf
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_openai import OpenAIEmbeddings
@@ -34,14 +34,15 @@ def get_vector_store() -> Chroma:
     Returns:
         Chroma: The instantiated Chroma vector store.
     """
+    from pydantic import SecretStr
     embeddings = OpenAIEmbeddings(
-        api_key=settings.openai_api_key,
+        api_key=SecretStr(settings.openai_api_key),
         model="text-embedding-3-large"
     )
     return Chroma(
         collection_name="heart_speaks_collection",
         embedding_function=embeddings,
-        persist_directory=settings.chroma_persist_dir,
+        persist_directory=str(settings.chroma_persist_dir),
     )
 
 def ingest_data(data_path: str = settings.data_dir) -> Chroma:
@@ -77,12 +78,43 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
         
     logger.info(f"Loaded {len(docs)} document pages.")
     
-    # Enrich metadata
+    # Enrich metadata and group full text for repository
+    from heart_speaks.repository import init_db, upsert_message
+    init_db()
+    
+    docs_by_file = {}
     for doc in docs:
         source = doc.metadata.get("source", "Unknown")
         filename = os.path.basename(source)
-        doc.metadata["date"] = extract_datetime_from_filename(filename)
+        date = extract_datetime_from_filename(filename)
+        
+        doc.metadata["date"] = date
         doc.metadata["source_file"] = filename
+        
+        if filename not in docs_by_file:
+            docs_by_file[filename] = {"text": "", "pages": 0, "date": date}
+        docs_by_file[filename]["text"] = str(docs_by_file[filename]["text"]) + str(doc.page_content) + "\n\n"
+        docs_by_file[filename]["pages"] = int(docs_by_file[filename]["pages"]) + 1 # type: ignore
+        
+    # Insert full texts into repository
+    logger.info("Upserting full messages into SQLite repository...")
+    for filename, data in docs_by_file.items():
+        # Extrapolate generic author hint based on Heartfulness context if needed
+        author = "Spiritual Guide"
+        if "babuji" in filename.lower(): 
+            author = "Babuji"
+        elif "chariji" in filename.lower(): 
+            author = "Chariji"
+        elif "daaji" in filename.lower(): 
+            author = "Daaji"
+            
+        upsert_message(
+            source_file=filename,
+            full_text=str(data["text"]),
+            author=author,
+            date=str(data["date"]),
+            page_count=int(data["pages"]) # type: ignore
+        )
         
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.chunk_size,
@@ -102,7 +134,7 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
     for i in range(0, len(splits), batch_size):
         batch = splits[i:i + batch_size]
         ids = [
-            hashlib.md5(f"{doc.metadata.get('source_file', 'unknown')}:{doc.page_content}".encode("utf-8")).hexdigest()
+            hashlib.md5(f"{doc.metadata.get('source_file', 'unknown')}:{doc.page_content}".encode()).hexdigest()
             for doc in batch
         ]
         vectorstore.add_documents(batch, ids=ids)

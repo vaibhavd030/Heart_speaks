@@ -1,21 +1,20 @@
-import pytest
-from unittest.mock import patch, MagicMock
-from typing import List
+from unittest.mock import MagicMock, patch
 
-from langchain_core.retrievers import BaseRetriever
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
 
-from heart_speaks.retriever import get_reranking_retriever, FlashRankRetriever
+from heart_speaks.retriever import FlashRankRetriever, get_reranking_retriever
+
 
 class FakeRetriever(BaseRetriever):
-    def _get_relevant_documents(self, query: str, *, run_manager: CallbackManagerForRetrieverRun) -> List[Document]:
+    def _get_relevant_documents(self, query: str, *, run_manager: CallbackManagerForRetrieverRun) -> list[Document]:
         return []
 
 @patch('heart_speaks.retriever.get_vector_store')
 @patch('langchain_community.document_compressors.flashrank_rerank.Ranker')
 @patch('heart_speaks.retriever.FlashrankRerank')
-def test_get_reranking_retriever(mock_flashrank, mock_ranker, mock_get_store):
+def test_get_reranking_retriever(mock_flashrank: MagicMock, mock_ranker: MagicMock, mock_get_store: MagicMock) -> None:
     """Test that the reranking retriever pipeline is built correctly."""
     mock_store = MagicMock()
     fake_retriever = FakeRetriever()

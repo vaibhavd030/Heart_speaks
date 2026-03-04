@@ -1,17 +1,18 @@
+import os
 from collections.abc import Sequence
 from typing import Annotated, TypedDict
 
+from langchain_community.cache import SQLiteCache
+from langchain_core.globals import set_llm_cache
 from langchain_core.messages import BaseMessage
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from loguru import logger
 from openai import OpenAI
-
-from langchain_core.globals import set_llm_cache
-from langchain_community.cache import SQLiteCache
-import os
+from pydantic import BaseModel, Field
 
 from heart_speaks.config import settings
 from heart_speaks.models import LLMResponse
@@ -23,16 +24,42 @@ if settings.enable_llm_cache:
     set_llm_cache(SQLiteCache(database_path=os.path.join(settings.cache_dir, "llm_cache.db")))
 
 
+from typing import Any
+
 class GraphState(TypedDict):
     """Represents the state of our graph."""
     messages: Annotated[Sequence[BaseMessage], add_messages]
     context: list[str]
-    docs: list[dict] # source metadata for citation tracking
+    docs: list[dict[str, Any]] # source metadata for citation tracking
     is_safe: bool
-    final_response: dict
-    metadata_filter: dict | None # optional metadata filters
+    final_response: dict[str, Any]
+    intent: str
+    metadata_filter: dict[str, Any] | None # optional metadata filters
 
-def check_prompt_injection(state: GraphState):
+class IntentClassification(BaseModel):
+    intent: str = Field(description="The intent of the user's question. Must be one of: SEEKING_WISDOM, FACTUAL_REFERENCE, EMOTIONAL_SUPPORT, EXPLORATION")
+
+def classify_intent(state: GraphState) -> dict[str, str]:
+    """Classifies the user's message intent."""
+    logger.info("Classifying intent...")
+    latest_message = state["messages"][-1].content
+    from pydantic import SecretStr
+    llm = ChatOpenAI(model="gpt-4o-mini", api_key=SecretStr(settings.openai_api_key), temperature=0)
+    structured_llm = llm.with_structured_output(IntentClassification)
+    try:
+        res = structured_llm.invoke(f"Classify the intent of the following spiritual question:\n\n{latest_message}")
+        if isinstance(res, IntentClassification) and res.intent in ["SEEKING_WISDOM", "FACTUAL_REFERENCE", "EMOTIONAL_SUPPORT", "EXPLORATION"]:
+            intent = res.intent
+        else:
+            intent = "SEEKING_WISDOM"
+    except Exception as e:
+        logger.warning(f"Intent classification failed: {e}")
+        intent = "SEEKING_WISDOM"
+        
+    logger.info(f"Classified intent: {intent}")
+    return {"intent": intent}
+
+def check_prompt_injection(state: GraphState) -> dict[str, bool]:
     """Analyzes the latest user message for potential prompt injections or malicious intent using OpenAI Moderation API.
 
     Args:
@@ -47,7 +74,8 @@ def check_prompt_injection(state: GraphState):
     try:
         client = OpenAI(api_key=settings.openai_api_key)
         # Using the standard moderations endpoint which is free and very fast
-        response = client.moderations.create(input=latest_message)
+        msg_str = str(latest_message)
+        response = client.moderations.create(input=msg_str)
         is_safe = not response.results[0].flagged
     except Exception as e:
         logger.warning(f"Moderation API check failed, assuming safe to proceed: {e}")
@@ -55,59 +83,96 @@ def check_prompt_injection(state: GraphState):
         
     return {"is_safe": is_safe}
 
-def route_safety(state: GraphState):
-    """Routes to retrieval if safe, else ends the graph."""
+def route_safety(state: GraphState) -> str:
+    """Routes to classification if safe, else ends the graph."""
     if state.get("is_safe", True):
-        return "retrieve"
+        return "classify_intent"
     logger.warning("Prompt injection detected. Halting.")
     return "unsafe_response"
 
-def unsafe_response(state: GraphState):
+def unsafe_response(state: GraphState) -> dict[str, dict[str, Any]]:
     """Returns a canned response for malicious input."""
     return {"final_response": {
         "answer": "I cannot fulfill this request as it violates safety guidelines.",
         "citations": []
     }}
 
-def retrieve(state: GraphState):
+def retrieve(state: GraphState) -> dict[str, list[str] | list[dict[str, Any]]]:
     """Retrieves relevant spiritual chunks from the vector store."""
     logger.info("Retrieving context...")
     latest_message = state["messages"][-1].content
     metadata_filter = state.get("metadata_filter")
     
     retriever = get_reranking_retriever(search_filter=metadata_filter)
-    docs = retriever.invoke(latest_message)
+    docs = retriever.invoke(str(latest_message))
     
     formatted_context = []
     doc_metadata = []
     for d in docs:
         content = d.page_content
         source = d.metadata.get("source_file", "Unknown PDF")
+        date = d.metadata.get("date", "Unknown Date")
         page = d.metadata.get("page", 0)
-        formatted_context.append(f"[Source: {source}, Page: {page}]\n{content}")
+        formatted_context.append(f"[Source File: {source}, Date: {date}]\n{content}")
         doc_metadata.append({"source": source, "page": page, "content": content})
         
     return {"context": formatted_context, "docs": doc_metadata}
 
-def generate(state: GraphState):
-    """Generates the grounded response using structured outputs."""
+def generate(state: GraphState) -> dict[str, dict[str, Any]]:
+    """Generates the grounded response using structured outputs and enriches with SQLite full-text."""
     logger.info("Generating response...")
     
-    llm = ChatOpenAI(model="gpt-4o", temperature=0, api_key=settings.openai_api_key)
+    # We allow streaming API configuration natively 
+    from pydantic import SecretStr
+    llm = ChatOpenAI(
+        model="gpt-4o", 
+        temperature=0, 
+        streaming=True, 
+        api_key=SecretStr(settings.openai_api_key)
+    )
+    structured_llm = llm.with_structured_output(LLMResponse)
     
     # We use the previous messages as conversation history
     history = state["messages"][:-1]
     latest_message = state["messages"][-1].content
     context = "\n\n---\n\n".join(state["context"])
+    intent = state.get("intent", "SEEKING_WISDOM")
     
+    intent_prompts = {
+        "SEEKING_WISDOM": (
+            "You are 'Heart Speaks', a gentle spiritual companion who has deeply absorbed the wisdom of these sacred messages. "
+            "Structure your response thoughtfully: "
+            "1. Start with a warm, conversational discussion of the topic. "
+            "2. Aggregate the teachings into distinct points using ONLY bold headings (do not use numbered lists like 1., 2., 3.). "
+            "3. Weave your explanations under each heading, ending with organic, elegant citations (e.g., 'As expressed in Whispers...'). "
+            "4. Conclude with a proper, synthesized summary of the wisdom. "
+            "Your tone should be warm, unhurried, and reverent. Invite the seeker to sit with the wisdom."
+        ),
+        "FACTUAL_REFERENCE": (
+            "You are 'Heart Speaks', a knowledgeable scholar of spiritual teachings. "
+            "Respond directly and precisely. Lead with the exact quote and citation to answer the requested fact."
+        ),
+        "EMOTIONAL_SUPPORT": (
+            "You are 'Heart Speaks', a compassionate spiritual guide. "
+            "Respond with deep compassion first, validating and acknowledging their current feeling. "
+            "Gently introduce relevant teachings as a comfort, not a prescription. Avoid telling them what to do."
+        ),
+        "EXPLORATION": (
+            "You are 'Heart Speaks', a patient spiritual teacher. "
+            "Provide a structured overview drawing from multiple teachings. Organize thoughts logically. "
+            "Offer to go deeper into specific aspects if they wish."
+        )
+    }
+    
+    base_prompt = intent_prompts.get(intent, intent_prompts["SEEKING_WISDOM"])
     system_prompt = (
-        "You are 'Heart Speaks', sharing the pure essence of spiritual messages. "
-        "Answer the seeker's question by preserving the exact tone, essence, and original voice of the provided context. "
-        "Do not heavily edit, translate, or over-summarize the messages; instead, read from the chunks and share the wisdom "
-        "as if reciting the original teachings directly, making sure it relates to the question asked. "
+        f"{base_prompt}\n\n"
         "Do not hallucinate. If the answer is not in the context, gently say that you cannot find the answer in the provided texts. "
-        "You MUST provide citations from the context to back up your guidance, referencing the Source file and Page number. "
-        "\n\nContext:\n{context}"
+        "You MUST provide citations from the context to back up your guidance. "
+        "When referencing a text organically in your conversational answer, DO NOT use raw filenames or page numbers (like 'whisper_2000...pdf' or 'Page: 0'). "
+        "Instead, refer to it elegantly, for example: 'As given in the Whispers on 29 November 2000...' or '(Whispers, 29 Nov 2000)'. "
+        "Strictly omit 'Page: 0'. However, you MUST STILL provide the exact filename in your structured JSON 'citations' block under the 'source' key so the UI can link the document. "
+        "\n\nContext:\n{context}\n\n"
     )
     
     prompt = ChatPromptTemplate.from_messages([
@@ -116,21 +181,72 @@ def generate(state: GraphState):
         ("human", "{question}"),
     ])
     
-    chain = prompt | llm.with_structured_output(LLMResponse)
+    chain = prompt | structured_llm
     
-    response = chain.invoke({
-        "context": context,
-        "history": history,
-        "question": latest_message
-    })
+    try:
+        response = chain.invoke({
+            "context": context,
+            "history": history,
+            "question": latest_message,
+        })
+        logger.info(f"Raw LLM Response: {response}")
+    except Exception as e:
+        logger.error(f"Error during LLM Generation: {str(e)}")
+        # Provide a fallback error response
+        response = {"answer": "I apologize, but I encountered an error formulating your response.", "citations": []}
+
+    if isinstance(response, dict):
+        answer_text = response.get("answer", "I apologize, but I encountered an error formulating your response.")
+        citations_data = response.get("citations", [])
+    else:
+        # LLMResponse Pydantic object
+        answer_text = response.answer
+        citations_data = response.citations
+
+    # Enrich LLM citations with front-end Source metadata via SQLite repository
+    from heart_speaks.repository import get_message_by_source
+    
+    rich_sources = []
+    for cit in citations_data:
+        source_name = getattr(cit, "source", cit.get("source", "")) if isinstance(cit, dict) else cit.source
+        quote = getattr(cit, "quote", cit.get("quote", "")) if isinstance(cit, dict) else cit.quote
+        try:
+            repo_data = get_message_by_source(source_name)
+        except Exception as e:
+            logger.warning(f"Repository lookup failed {e}")
+            repo_data = None
+            
+        if repo_data:
+            rich_sources.append({
+                "author": repo_data.get("author", "Unknown"),
+                "date": str(repo_data.get("date", "Unknown")),
+                "citation": source_name,
+                "preview": repo_data.get("preview", quote),
+                "full_text": repo_data.get("full_text", quote)
+            })
+        else:
+             rich_sources.append({
+                "author": "Unknown",
+                "date": "Unknown",
+                "citation": source_name,
+                "preview": quote,
+                "full_text": quote
+            })
+    
+    # Re-pack the payload to match Next.js ChatInterface
+    final_payload = {
+        "answer": answer_text,
+        "sources": rich_sources
+    }
     
     # Return serializable dict form for the final response
-    return {"final_response": response.model_dump()}
+    return {"final_response": final_payload}
 
 # Build the Graph
 workflow = StateGraph(GraphState)
 
 workflow.add_node("check_prompt_injection", check_prompt_injection)
+workflow.add_node("classify_intent", classify_intent)
 workflow.add_node("unsafe_response", unsafe_response)
 workflow.add_node("retrieve", retrieve)
 workflow.add_node("generate", generate)
@@ -138,6 +254,7 @@ workflow.add_node("generate", generate)
 workflow.add_edge(START, "check_prompt_injection")
 workflow.add_conditional_edges("check_prompt_injection", route_safety)
 workflow.add_edge("unsafe_response", END)
+workflow.add_edge("classify_intent", "retrieve")
 workflow.add_edge("retrieve", "generate")
 workflow.add_edge("generate", END)
 

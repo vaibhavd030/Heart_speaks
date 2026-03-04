@@ -1,48 +1,92 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import BaseModel
-from langchain_core.messages import HumanMessage
 
 from heart_speaks.graph import app as rag_app
 
 app = FastAPI(
     title="Heart Speaks API",
     description="API for the Heart Speaks Spiritual RAG Chatbot",
-    version="0.1.0"
+    version="0.2.0"
 )
+
+# Enable CORS for Next.js frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, restrict this to frontend domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+import os
+from fastapi.staticfiles import StaticFiles
+
+data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data")
+if os.path.exists(data_dir):
+    app.mount("/data", StaticFiles(directory=data_dir), name="data")
+
+from typing import Any
+
+# In-memory session store
+sessions: dict[str, Any] = {}
 
 class ChatRequest(BaseModel):
     message: str
     session_id: str = "default_user_session"
-    search_filter: dict | None = None
+    search_filter: dict[str, Any] | None = None
 
-class CitationModel(BaseModel):
-    source: str
-    page: int
-    quote: str
+class SourceModel(BaseModel):
+    author: str
+    date: str
+    citation: str
+    preview: str
+    full_text: str
 
 class ChatResponse(BaseModel):
     answer: str
-    citations: list[CitationModel]
+    sources: list[SourceModel]
 
 @app.post("/chat", response_model=ChatResponse)
-def chat_endpoint(request: ChatRequest):
+def chat_endpoint(request: ChatRequest) -> ChatResponse:
     """
     Chat endpoint for answering spiritual queries.
-    Supports optional metadata filtering via search_filter (e.g. {"source_file": "my_pdf.pdf"}).
+    Maintains conversation history via session_id.
+    Supports optional metadata filtering.
     """
+    # Retrieve or initialize session history
+    session_history = sessions.get(request.session_id, [
+        AIMessage(content="Dear Soul,\n\nI am here to guide you through the whispers of the brighter world. How may I be of service to your heart today?")
+    ])
+    
+    # Append new user message
+    user_msg = HumanMessage(content=request.message)
+    session_history.append(user_msg)
+    
     inputs = {
-        "messages": [HumanMessage(content=request.message)],
+        "messages": session_history,
         "metadata_filter": request.search_filter
     }
-    result = rag_app.invoke(inputs)
+    
+    result = rag_app.invoke(inputs) # type: ignore
     final_resp = result.get("final_response", {})
     
+    answer = final_resp.get("answer", "No answer generated.")
+    sources = final_resp.get("sources", [])
+    
+    # Append the AI's response to history so subsequent turns have context
+    session_history.append(AIMessage(content=answer))
+    
+    # Save back to store
+    sessions[request.session_id] = session_history
+    
     return ChatResponse(
-        answer=final_resp.get("answer", "No answer generated."),
-        citations=final_resp.get("citations", [])
+        answer=answer,
+        sources=sources
     )
 
 @app.get("/health")
-def health_check():
+def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy"}

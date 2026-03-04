@@ -10,13 +10,13 @@ from langchain_core.messages import HumanMessage
 from heart_speaks.graph import app
 
 
-def test_graph_compiles_and_responds():
+def test_graph_compiles_and_responds() -> None:
     """Simple smoke test to ensure graph compiles and doesn't crash on standard input."""
     # This requires an OPENAI_API_KEY to be set in .env
     inputs = {"messages": [HumanMessage(content="What is true peace?")]}
     
     try:
-        result = app.invoke(inputs)
+        result = app.invoke(inputs) # type: ignore
         assert "final_response" in result
         assert "answer" in result["final_response"]
         assert isinstance(result["final_response"]["answer"], str)

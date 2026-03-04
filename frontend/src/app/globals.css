@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme {
+  --color-paper: #F5F1E6;
+  --color-ink: #3E3E3E;
+  --color-gold-accent: #C5A065;
+  --color-floral-pink: #E0C1B3;
+  --color-sage-green: #A3B18A;
+
+  --font-script: "Pinyon Script", cursive;
+  --font-serif: "Playfair Display", serif;
+  --font-heading: "Crimson Text", serif;
+  --font-body: "Geist Sans", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}

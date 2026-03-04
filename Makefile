@@ -35,5 +35,8 @@ eval:
 run:
 	PYTHONPATH=src uv run streamlit run src/heart_speaks/app.py
 
+run-api:
+	PYTHONPATH=src uv run uvicorn heart_speaks.api:app --reload --port 8000
+
 clean:
 	rm -rf .venv __pycache__ .mypy_cache .ruff_cache .pytest_cache
