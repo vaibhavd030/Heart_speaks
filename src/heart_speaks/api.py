@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+import json
 from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import BaseModel
 
@@ -85,6 +87,56 @@ def chat_endpoint(request: ChatRequest) -> ChatResponse:
         answer=answer,
         sources=sources
     )
+
+@app.post("/chat/stream")
+async def chat_stream_endpoint(request: ChatRequest) -> StreamingResponse:
+    """
+    Streaming Chat endpoint for answering spiritual queries.
+    Uses Server-Sent Events (SSE) to stream text chunks and finally sources.
+    """
+    session_history = sessions.get(request.session_id, [
+        AIMessage(content="Dear Soul,\n\nI am here to guide you through the whispers of the brighter world. How may I be of service to your heart today?")
+    ])
+    
+    user_msg = HumanMessage(content=request.message)
+    session_history.append(user_msg)
+    
+    inputs = {
+        "messages": session_history,
+        "metadata_filter": request.search_filter
+    }
+    
+    async def event_stream():
+        final_answer = ""
+        final_sources = []
+        
+        try:
+            async for event in rag_app.astream_events(inputs, version="v2"):
+                kind = event["event"]
+                name = event.get("name", "")
+                
+                if kind == "on_chat_model_stream":
+                    tags = event.get("tags", [])
+                    # Only stream chunks from the final generation call
+                    if "final_generation" in tags:
+                        chunk_content = event["data"]["chunk"].content
+                        if chunk_content:
+                            final_answer += chunk_content
+                            yield f"data: {json.dumps({'type': 'content', 'text': chunk_content})}\n\n"
+                
+                elif kind == "on_chain_end" and event["name"] == "LangGraph":
+                    # Collect the final rich sources assembled by the graph
+                    final_resp = event["data"]["output"].get("final_response", {})
+                    final_sources = final_resp.get("sources", [])
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+            
+        yield f"data: {json.dumps({'type': 'sources', 'sources': final_sources})}\n\n"
+        
+        session_history.append(AIMessage(content=final_answer))
+        sessions[request.session_id] = session_history
+        
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 @app.get("/health")
 def health_check() -> dict[str, str]:

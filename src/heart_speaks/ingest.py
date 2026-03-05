@@ -99,24 +99,37 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
     # Insert full texts into repository
     logger.info("Upserting full messages into SQLite repository...")
     for filename, data in docs_by_file.items():
-        full_text_str = str(data["text"])
+        full_text_str = str(data["text"]).strip()
         
-        # Extract author signature from the last non-empty line
+        # Extract author from the last non-empty line
         author = "Spiritual Guide"
         lines = [line.strip() for line in full_text_str.split('\n') if line.strip()]
-        if lines:
-            extracted = lines[-1]
-            if len(extracted) < 50:  # Safety check to avoid treating long paragraphs as a signature
-                author = extracted
+        
+        # Look backwards from the end, skipping pure numbers (like page numbers)
+        for line in reversed(lines):
+            if line.replace('.', '').replace(',', '').isdigit():
+                continue
+            
+            # We assume the author name/signature is a short line at the very end
+            if len(line) < 50:
+                author = line
+                break
+            else:
+                break
 
-        # Extrapolate generic author hint based on filename as a fallback
-        if author == "Spiritual Guide":
-            if "babuji" in filename.lower(): 
+        # Fallback to filename heuristics if the extracted author seems invalid
+        if author == "Spiritual Guide" or len(author) > 50:
+            filename_lower = filename.lower()
+            if "babuji" in filename_lower: 
                 author = "Babuji"
-            elif "chariji" in filename.lower(): 
+            elif "chariji" in filename_lower: 
                 author = "Chariji"
-            elif "daaji" in filename.lower(): 
+            elif "daaji" in filename_lower: 
                 author = "Daaji"
+            elif "lalaji" in filename_lower:
+                author = "Lalaji"
+            else:
+                author = "Spiritual Guide"
             
         upsert_message(
             source_file=filename,

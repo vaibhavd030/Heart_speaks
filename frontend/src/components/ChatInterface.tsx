@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, User, Bot, Loader2, BookOpen, Feather, FileDown } from 'lucide-react';
-import { sendMessage } from '@/lib/api';
+import { sendMessageStream } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import Image from 'next/image';
@@ -78,41 +78,86 @@ export function ChatInterface() {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isUserScrolling, setIsUserScrolling] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+    const handleScroll = () => {
+        if (!scrollContainerRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+        setIsUserScrolling(!isAtBottom);
+    };
+
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (!isUserScrolling) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
     };
 
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!input.trim() || isLoading) return;
+    const handleSend = async (text: string) => {
+        if (!text.trim() || isLoading) return;
 
-        const userMessage = input.trim();
-        setInput('');
-        setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+        setMessages(prev => [...prev, { role: 'user', content: text }]);
         setIsLoading(true);
+        // Add minimal empty assistant message placeholder
+        setMessages(prev => [...prev, { role: 'assistant', content: '', sources: [] }]);
 
         try {
-            const response = await sendMessage(userMessage);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: response.answer,
-                sources: response.sources
-            }]);
+            await sendMessageStream(
+                text,
+                (textChunk) => {
+                    setIsLoading(false); // Stop loading spinner as soon as tokens arrive
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        const lastIndex = newMessages.length - 1;
+                        newMessages[lastIndex] = {
+                            ...newMessages[lastIndex],
+                            content: newMessages[lastIndex].content + textChunk
+                        };
+                        return newMessages;
+                    });
+                },
+                (sources) => {
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        const lastIndex = newMessages.length - 1;
+                        newMessages[lastIndex] = {
+                            ...newMessages[lastIndex],
+                            sources: sources
+                        };
+                        return newMessages;
+                    });
+                },
+                (error) => {
+                    console.error("Stream Error:", error);
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        const lastIndex = newMessages.length - 1;
+                        if (!newMessages[lastIndex].content) {
+                            newMessages[lastIndex].content = 'I apologize, but I encountered an error with the spiritual archive. Please try again later.';
+                        }
+                        return newMessages;
+                    });
+                }
+            );
         } catch (error) {
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: 'I apologize, but I encountered an error connecting to the spiritual archive. Please try again.'
-            }]);
+            console.error("Catch block:", error);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const text = input.trim();
+        setInput('');
+        await handleSend(text);
     };
 
     const handleDownloadPDF = (question: string, content: string, sources?: Source[]) => {
@@ -125,11 +170,11 @@ export function ChatInterface() {
             let yPosition = 20;
 
             // Background color (paper/parchment mimic)
-            doc.setFillColor(253, 251, 247); // #fdfbf7
+            doc.setFillColor(245, 241, 230); // #F5F1E6 Tailwind var
             doc.rect(0, 0, pageWidth, pageHeight, "F");
 
             // Text Color (ink mimic)
-            doc.setTextColor(26, 21, 27); // #1a151b
+            doc.setTextColor(62, 62, 62); // #3E3E3E Tailwind var
 
             // Title
             doc.setFont("times", "italic");
@@ -142,27 +187,29 @@ export function ChatInterface() {
 
             // Divider Line
             yPosition += 8;
-            doc.setDrawColor(212, 175, 55); // #d4af37 (gold accent)
+            doc.setDrawColor(197, 160, 101); // #C5A065 (gold accent)
             doc.setLineWidth(0.5);
             doc.line(pageWidth / 2 - 20, yPosition, pageWidth / 2 + 20, yPosition);
             yPosition += 20;
 
             // User Question Area
-            doc.setFont("times", "normal");
+            // User Question Area
+            doc.setFont("helvetica", "normal");
             doc.setFontSize(14);
             const splitQuestion = doc.splitTextToSize(question, contentWidth);
             const questionHeight = (splitQuestion.length * 7) + 15;
 
-            doc.setFillColor(245, 240, 235); // Lighter bubble
+            // Lighter bubble overlay
+            doc.setFillColor(235, 230, 218);
             doc.roundedRect(margin - 5, yPosition - 8, contentWidth + 10, questionHeight, 3, 3, "F");
 
             doc.setFont("times", "italic");
-            doc.setTextColor(100, 80, 85);
+            doc.setTextColor(197, 160, 101); // gold accent
             doc.text(`Seeker asks:`, margin, yPosition);
             yPosition += 8;
 
-            doc.setFont("times", "normal");
-            doc.setTextColor(26, 21, 27);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(62, 62, 62);
             doc.text(splitQuestion, margin, yPosition);
             yPosition += questionHeight - 5;
 
@@ -188,13 +235,17 @@ export function ChatInterface() {
                     cleanLine = cleanLine.replace(/\*\*/g, '');
                 }
 
-                doc.setFont("times", isBold ? "bold" : "normal");
+                if (isBold) {
+                    doc.setFont("times", "bold");
+                } else {
+                    doc.setFont("helvetica", "normal");
+                }
                 const splitContent = doc.splitTextToSize(cleanLine, contentWidth);
 
                 // Auto-page wrapping for long responses
                 if (yPosition + (splitContent.length * 7) > pageHeight - 40) {
                     doc.addPage();
-                    doc.setFillColor(253, 251, 247);
+                    doc.setFillColor(245, 241, 230); // #F5F1E6
                     doc.rect(0, 0, pageWidth, pageHeight, "F");
                     yPosition = 20;
                 }
@@ -230,7 +281,7 @@ export function ChatInterface() {
 
                     if (yPosition + (splitSource.length * 5) > doc.internal.pageSize.getHeight() - 20) {
                         doc.addPage();
-                        doc.setFillColor(253, 251, 247); // Refill background for new page
+                        doc.setFillColor(245, 241, 230); // #F5F1E6
                         doc.rect(0, 0, pageWidth, pageHeight, "F");
                         yPosition = 20;
                     }
@@ -288,7 +339,11 @@ export function ChatInterface() {
             </header>
 
             {/* Main Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 relative z-20 scrollbar-thin scrollbar-thumb-ink/20 scrollbar-track-transparent">
+            <div
+                ref={scrollContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto p-4 sm:p-8 relative z-20 scrollbar-thin scrollbar-thumb-ink/20 scrollbar-track-transparent"
+            >
                 <div className="max-w-4xl mx-auto space-y-8 pb-32">
                     {messages.map((msg, idx) => (
                         <div
@@ -359,10 +414,24 @@ export function ChatInterface() {
                         </div>
                     ))}
 
+                    {messages.length === 1 && (
+                        <div className="flex flex-wrap justify-center gap-3 mt-8 opacity-80">
+                            {["Tell me about meditation", "How to find inner peace", "What is the purpose of suffering?", "How to deepen my practice"].map((suggestion, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => handleSend(suggestion)}
+                                    className="px-5 py-2.5 rounded-full border border-gold-accent/40 bg-white/50 hover:bg-white/80 text-ink/90 text-sm font-heading italic transition-all shadow-sm hover:shadow-md hover:text-ink hover:border-gold-accent"
+                                >
+                                    {suggestion}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     {isLoading && (
                         <div className="flex justify-center items-center py-4 opacity-70">
                             <Loader2 size={24} className="text-floral-pink animate-spin mr-2" />
-                            <span className="font-heading italic">Consulting the brighter world...</span>
+                            <span className="font-heading italic">Referring to Whispers From the Brighter World Archives...</span>
                         </div>
                     )}
                     <div ref={messagesEndRef} />

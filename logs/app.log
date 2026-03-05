@@ -150,3 +150,157 @@
 2026-03-03 18:17:15.876 | INFO     | __main__:ingest_data:109 - Added batch 67 of 68
 2026-03-03 18:17:16.194 | INFO     | __main__:ingest_data:109 - Added batch 68 of 68
 2026-03-03 18:17:16.194 | INFO     | __main__:ingest_data:111 - Ingestion complete.
+2026-03-05 00:24:33.863 | INFO     | __main__:ingest_data:57 - Starting ingestion process from ./data
+2026-03-05 00:24:33.864 | INFO     | __main__:ingest_data:64 - Loading documents...
+2026-03-05 00:24:49.079 | INFO     | __main__:ingest_data:79 - Loaded 4074 document pages.
+2026-03-05 00:24:49.080 | INFO     | heart_speaks.repository:init_db:25 - Initializing message repository at /Users/vaibhavdikshit/dev/Heart_speaks/src/heart_speaks/../../data/messages.db
+2026-03-05 00:24:49.087 | INFO     | __main__:ingest_data:100 - Upserting full messages into SQLite repository...
+2026-03-05 00:24:50.015 | INFO     | __main__:ingest_data:130 - Splitting documents into chunks...
+2026-03-05 00:24:50.096 | INFO     | __main__:ingest_data:132 - Created 6720 chunks.
+2026-03-05 00:24:50.259 | INFO     | __main__:ingest_data:136 - Adding chunks to ChromaDB...
+2026-03-05 00:24:52.251 | INFO     | __main__:ingest_data:146 - Added batch 1 of 68
+2026-03-05 00:24:53.362 | INFO     | __main__:ingest_data:146 - Added batch 2 of 68
+2026-03-05 00:24:54.369 | INFO     | __main__:ingest_data:146 - Added batch 3 of 68
+2026-03-05 00:24:55.475 | INFO     | __main__:ingest_data:146 - Added batch 4 of 68
+2026-03-05 00:24:56.391 | INFO     | __main__:ingest_data:146 - Added batch 5 of 68
+2026-03-05 00:24:57.547 | INFO     | __main__:ingest_data:146 - Added batch 6 of 68
+2026-03-05 00:24:58.657 | INFO     | __main__:ingest_data:146 - Added batch 7 of 68
+2026-03-05 00:24:59.491 | INFO     | __main__:ingest_data:146 - Added batch 8 of 68
+2026-03-05 00:25:01.045 | INFO     | __main__:ingest_data:146 - Added batch 9 of 68
+2026-03-05 00:25:02.031 | INFO     | __main__:ingest_data:146 - Added batch 10 of 68
+2026-03-05 00:25:03.200 | INFO     | __main__:ingest_data:146 - Added batch 11 of 68
+2026-03-05 00:25:04.488 | INFO     | __main__:ingest_data:146 - Added batch 12 of 68
+2026-03-05 00:25:05.727 | INFO     | __main__:ingest_data:146 - Added batch 13 of 68
+2026-03-05 00:25:06.713 | INFO     | __main__:ingest_data:146 - Added batch 14 of 68
+2026-03-05 00:25:07.766 | INFO     | __main__:ingest_data:146 - Added batch 15 of 68
+2026-03-05 00:25:08.753 | INFO     | __main__:ingest_data:146 - Added batch 16 of 68
+2026-03-05 00:25:10.129 | INFO     | __main__:ingest_data:146 - Added batch 17 of 68
+2026-03-05 00:25:11.223 | INFO     | __main__:ingest_data:146 - Added batch 18 of 68
+2026-03-05 00:25:12.355 | INFO     | __main__:ingest_data:146 - Added batch 19 of 68
+2026-03-05 00:25:13.475 | INFO     | __main__:ingest_data:146 - Added batch 20 of 68
+2026-03-05 00:25:14.457 | INFO     | __main__:ingest_data:146 - Added batch 21 of 68
+2026-03-05 00:25:15.479 | INFO     | __main__:ingest_data:146 - Added batch 22 of 68
+2026-03-05 00:25:16.687 | INFO     | __main__:ingest_data:146 - Added batch 23 of 68
+2026-03-05 00:25:17.685 | INFO     | __main__:ingest_data:146 - Added batch 24 of 68
+2026-03-05 00:25:18.663 | INFO     | __main__:ingest_data:146 - Added batch 25 of 68
+2026-03-05 00:25:19.771 | INFO     | __main__:ingest_data:146 - Added batch 26 of 68
+2026-03-05 00:25:20.809 | INFO     | __main__:ingest_data:146 - Added batch 27 of 68
+2026-03-05 00:25:21.703 | INFO     | __main__:ingest_data:146 - Added batch 28 of 68
+2026-03-05 00:25:23.092 | INFO     | __main__:ingest_data:146 - Added batch 29 of 68
+2026-03-05 00:25:23.969 | INFO     | __main__:ingest_data:146 - Added batch 30 of 68
+2026-03-05 00:25:25.012 | INFO     | __main__:ingest_data:146 - Added batch 31 of 68
+2026-03-05 00:25:25.985 | INFO     | __main__:ingest_data:146 - Added batch 32 of 68
+2026-03-05 00:25:27.053 | INFO     | __main__:ingest_data:146 - Added batch 33 of 68
+2026-03-05 00:25:28.073 | INFO     | __main__:ingest_data:146 - Added batch 34 of 68
+2026-03-05 00:25:29.247 | INFO     | __main__:ingest_data:146 - Added batch 35 of 68
+2026-03-05 00:25:30.408 | INFO     | __main__:ingest_data:146 - Added batch 36 of 68
+2026-03-05 00:25:31.465 | INFO     | __main__:ingest_data:146 - Added batch 37 of 68
+2026-03-05 00:25:32.714 | INFO     | __main__:ingest_data:146 - Added batch 38 of 68
+2026-03-05 00:25:33.659 | INFO     | __main__:ingest_data:146 - Added batch 39 of 68
+2026-03-05 00:25:34.579 | INFO     | __main__:ingest_data:146 - Added batch 40 of 68
+2026-03-05 00:25:35.559 | INFO     | __main__:ingest_data:146 - Added batch 41 of 68
+2026-03-05 00:25:36.556 | INFO     | __main__:ingest_data:146 - Added batch 42 of 68
+2026-03-05 00:25:37.653 | INFO     | __main__:ingest_data:146 - Added batch 43 of 68
+2026-03-05 00:25:38.778 | INFO     | __main__:ingest_data:146 - Added batch 44 of 68
+2026-03-05 00:25:39.816 | INFO     | __main__:ingest_data:146 - Added batch 45 of 68
+2026-03-05 00:25:40.866 | INFO     | __main__:ingest_data:146 - Added batch 46 of 68
+2026-03-05 00:25:41.654 | INFO     | __main__:ingest_data:146 - Added batch 47 of 68
+2026-03-05 00:25:42.746 | INFO     | __main__:ingest_data:146 - Added batch 48 of 68
+2026-03-05 00:25:43.869 | INFO     | __main__:ingest_data:146 - Added batch 49 of 68
+2026-03-05 00:25:45.135 | INFO     | __main__:ingest_data:146 - Added batch 50 of 68
+2026-03-05 00:25:46.137 | INFO     | __main__:ingest_data:146 - Added batch 51 of 68
+2026-03-05 00:25:47.096 | INFO     | __main__:ingest_data:146 - Added batch 52 of 68
+2026-03-05 00:25:48.070 | INFO     | __main__:ingest_data:146 - Added batch 53 of 68
+2026-03-05 00:25:49.188 | INFO     | __main__:ingest_data:146 - Added batch 54 of 68
+2026-03-05 00:25:50.100 | INFO     | __main__:ingest_data:146 - Added batch 55 of 68
+2026-03-05 00:25:50.940 | INFO     | __main__:ingest_data:146 - Added batch 56 of 68
+2026-03-05 00:25:52.012 | INFO     | __main__:ingest_data:146 - Added batch 57 of 68
+2026-03-05 00:25:53.180 | INFO     | __main__:ingest_data:146 - Added batch 58 of 68
+2026-03-05 00:25:53.983 | INFO     | __main__:ingest_data:146 - Added batch 59 of 68
+2026-03-05 00:25:55.042 | INFO     | __main__:ingest_data:146 - Added batch 60 of 68
+2026-03-05 00:25:56.043 | INFO     | __main__:ingest_data:146 - Added batch 61 of 68
+2026-03-05 00:25:56.928 | INFO     | __main__:ingest_data:146 - Added batch 62 of 68
+2026-03-05 00:25:57.925 | INFO     | __main__:ingest_data:146 - Added batch 63 of 68
+2026-03-05 00:25:58.944 | INFO     | __main__:ingest_data:146 - Added batch 64 of 68
+2026-03-05 00:26:00.222 | INFO     | __main__:ingest_data:146 - Added batch 65 of 68
+2026-03-05 00:26:01.215 | INFO     | __main__:ingest_data:146 - Added batch 66 of 68
+2026-03-05 00:26:02.264 | INFO     | __main__:ingest_data:146 - Added batch 67 of 68
+2026-03-05 00:26:02.670 | INFO     | __main__:ingest_data:146 - Added batch 68 of 68
+2026-03-05 00:26:02.670 | INFO     | __main__:ingest_data:148 - Ingestion complete.
+2026-03-05 22:58:02.639 | INFO     | __main__:ingest_data:57 - Starting ingestion process from ./data
+2026-03-05 22:58:02.639 | INFO     | __main__:ingest_data:64 - Loading documents...
+2026-03-05 22:58:18.464 | INFO     | __main__:ingest_data:79 - Loaded 4074 document pages.
+2026-03-05 22:58:18.465 | INFO     | heart_speaks.repository:init_db:25 - Initializing message repository at /Users/vaibhavdikshit/dev/Heart_speaks/src/heart_speaks/../../data/messages.db
+2026-03-05 22:58:18.472 | INFO     | __main__:ingest_data:100 - Upserting full messages into SQLite repository...
+2026-03-05 22:58:19.404 | INFO     | __main__:ingest_data:148 - Splitting documents into chunks...
+2026-03-05 22:58:19.491 | INFO     | __main__:ingest_data:150 - Created 6720 chunks.
+2026-03-05 22:58:19.675 | INFO     | __main__:ingest_data:154 - Adding chunks to ChromaDB...
+2026-03-05 22:58:24.141 | INFO     | __main__:ingest_data:164 - Added batch 1 of 68
+2026-03-05 22:58:25.392 | INFO     | __main__:ingest_data:164 - Added batch 2 of 68
+2026-03-05 22:58:28.822 | INFO     | __main__:ingest_data:164 - Added batch 3 of 68
+2026-03-05 22:58:29.887 | INFO     | __main__:ingest_data:164 - Added batch 4 of 68
+2026-03-05 22:58:30.905 | INFO     | __main__:ingest_data:164 - Added batch 5 of 68
+2026-03-05 22:58:31.926 | INFO     | __main__:ingest_data:164 - Added batch 6 of 68
+2026-03-05 22:58:32.835 | INFO     | __main__:ingest_data:164 - Added batch 7 of 68
+2026-03-05 22:58:33.924 | INFO     | __main__:ingest_data:164 - Added batch 8 of 68
+2026-03-05 22:58:34.921 | INFO     | __main__:ingest_data:164 - Added batch 9 of 68
+2026-03-05 22:58:36.222 | INFO     | __main__:ingest_data:164 - Added batch 10 of 68
+2026-03-05 22:58:37.339 | INFO     | __main__:ingest_data:164 - Added batch 11 of 68
+2026-03-05 22:58:38.263 | INFO     | __main__:ingest_data:164 - Added batch 12 of 68
+2026-03-05 22:58:39.664 | INFO     | __main__:ingest_data:164 - Added batch 13 of 68
+2026-03-05 22:58:40.737 | INFO     | __main__:ingest_data:164 - Added batch 14 of 68
+2026-03-05 22:58:41.806 | INFO     | __main__:ingest_data:164 - Added batch 15 of 68
+2026-03-05 22:58:42.844 | INFO     | __main__:ingest_data:164 - Added batch 16 of 68
+2026-03-05 22:58:43.949 | INFO     | __main__:ingest_data:164 - Added batch 17 of 68
+2026-03-05 22:58:45.042 | INFO     | __main__:ingest_data:164 - Added batch 18 of 68
+2026-03-05 22:58:46.019 | INFO     | __main__:ingest_data:164 - Added batch 19 of 68
+2026-03-05 22:58:47.038 | INFO     | __main__:ingest_data:164 - Added batch 20 of 68
+2026-03-05 22:58:48.180 | INFO     | __main__:ingest_data:164 - Added batch 21 of 68
+2026-03-05 22:58:49.198 | INFO     | __main__:ingest_data:164 - Added batch 22 of 68
+2026-03-05 22:58:50.261 | INFO     | __main__:ingest_data:164 - Added batch 23 of 68
+2026-03-05 22:58:51.141 | INFO     | __main__:ingest_data:164 - Added batch 24 of 68
+2026-03-05 22:58:52.413 | INFO     | __main__:ingest_data:164 - Added batch 25 of 68
+2026-03-05 22:58:53.421 | INFO     | __main__:ingest_data:164 - Added batch 26 of 68
+2026-03-05 22:58:54.556 | INFO     | __main__:ingest_data:164 - Added batch 27 of 68
+2026-03-05 22:58:55.562 | INFO     | __main__:ingest_data:164 - Added batch 28 of 68
+2026-03-05 22:58:56.585 | INFO     | __main__:ingest_data:164 - Added batch 29 of 68
+2026-03-05 22:58:57.600 | INFO     | __main__:ingest_data:164 - Added batch 30 of 68
+2026-03-05 22:58:58.542 | INFO     | __main__:ingest_data:164 - Added batch 31 of 68
+2026-03-05 22:58:59.566 | INFO     | __main__:ingest_data:164 - Added batch 32 of 68
+2026-03-05 22:59:00.386 | INFO     | __main__:ingest_data:164 - Added batch 33 of 68
+2026-03-05 22:59:01.422 | INFO     | __main__:ingest_data:164 - Added batch 34 of 68
+2026-03-05 22:59:02.554 | INFO     | __main__:ingest_data:164 - Added batch 35 of 68
+2026-03-05 22:59:03.456 | INFO     | __main__:ingest_data:164 - Added batch 36 of 68
+2026-03-05 22:59:04.277 | INFO     | __main__:ingest_data:164 - Added batch 37 of 68
+2026-03-05 22:59:05.607 | INFO     | __main__:ingest_data:164 - Added batch 38 of 68
+2026-03-05 22:59:06.892 | INFO     | __main__:ingest_data:164 - Added batch 39 of 68
+2026-03-05 22:59:07.810 | INFO     | __main__:ingest_data:164 - Added batch 40 of 68
+2026-03-05 22:59:08.823 | INFO     | __main__:ingest_data:164 - Added batch 41 of 68
+2026-03-05 22:59:09.711 | INFO     | __main__:ingest_data:164 - Added batch 42 of 68
+2026-03-05 22:59:10.768 | INFO     | __main__:ingest_data:164 - Added batch 43 of 68
+2026-03-05 22:59:12.003 | INFO     | __main__:ingest_data:164 - Added batch 44 of 68
+2026-03-05 22:59:12.816 | INFO     | __main__:ingest_data:164 - Added batch 45 of 68
+2026-03-05 22:59:13.973 | INFO     | __main__:ingest_data:164 - Added batch 46 of 68
+2026-03-05 22:59:15.059 | INFO     | __main__:ingest_data:164 - Added batch 47 of 68
+2026-03-05 22:59:15.945 | INFO     | __main__:ingest_data:164 - Added batch 48 of 68
+2026-03-05 22:59:17.005 | INFO     | __main__:ingest_data:164 - Added batch 49 of 68
+2026-03-05 22:59:17.977 | INFO     | __main__:ingest_data:164 - Added batch 50 of 68
+2026-03-05 22:59:18.960 | INFO     | __main__:ingest_data:164 - Added batch 51 of 68
+2026-03-05 22:59:20.020 | INFO     | __main__:ingest_data:164 - Added batch 52 of 68
+2026-03-05 22:59:20.883 | INFO     | __main__:ingest_data:164 - Added batch 53 of 68
+2026-03-05 22:59:21.921 | INFO     | __main__:ingest_data:164 - Added batch 54 of 68
+2026-03-05 22:59:23.124 | INFO     | __main__:ingest_data:164 - Added batch 55 of 68
+2026-03-05 22:59:24.230 | INFO     | __main__:ingest_data:164 - Added batch 56 of 68
+2026-03-05 22:59:25.487 | INFO     | __main__:ingest_data:164 - Added batch 57 of 68
+2026-03-05 22:59:26.510 | INFO     | __main__:ingest_data:164 - Added batch 58 of 68
+2026-03-05 22:59:27.641 | INFO     | __main__:ingest_data:164 - Added batch 59 of 68
+2026-03-05 22:59:28.758 | INFO     | __main__:ingest_data:164 - Added batch 60 of 68
+2026-03-05 22:59:29.938 | INFO     | __main__:ingest_data:164 - Added batch 61 of 68
+2026-03-05 22:59:30.816 | INFO     | __main__:ingest_data:164 - Added batch 62 of 68
+2026-03-05 22:59:31.834 | INFO     | __main__:ingest_data:164 - Added batch 63 of 68
+2026-03-05 22:59:32.656 | INFO     | __main__:ingest_data:164 - Added batch 64 of 68
+2026-03-05 22:59:33.732 | INFO     | __main__:ingest_data:164 - Added batch 65 of 68
+2026-03-05 22:59:35.193 | INFO     | __main__:ingest_data:164 - Added batch 66 of 68
+2026-03-05 22:59:36.309 | INFO     | __main__:ingest_data:164 - Added batch 67 of 68
+2026-03-05 22:59:36.677 | INFO     | __main__:ingest_data:164 - Added batch 68 of 68
+2026-03-05 22:59:36.677 | INFO     | __main__:ingest_data:166 - Ingestion complete.
