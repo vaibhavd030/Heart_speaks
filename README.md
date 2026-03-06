@@ -4,8 +4,8 @@
 Heart Speaks is a production-grade RAG (Retrieval-Augmented Generation) chatbot designed to read thousands of spiritual messages and discourse transcripts in PDF format and answer questions with precise, clickable citations. It features a bespoke React UI that intelligently extracts true author signatures and provides a peaceful reading experience.
 ## 2. Dataset Description & Statistics
 The primary knowledge base consists of the **"All Whispers Messages"** dataset, a comprehensively curated collection of transcribed spiritual discourses and messages.
-- **Total Documents:** ~9,900 indexed PDF transcripts.
-- **Date Range:** Detailed records spanning from the early 1990s through recent years (e.g., 1991 - 2014+).
+- **Total Messages:** 4,681 PDF transcripts.
+- **Date Range:** Detailed records spanning from the early 1990s through recent years (e.g., 1991 - 2017).
 - **Authorship:** Insights drawn directly from spiritual guides (e.g., Babuji Maharaj) as identified through filename metadata signatures.
 - **Organization:** The raw repository is strictly chronologically partitioned (`/YYYY/Month/Message.pdf`) to enable deep Exploratory Data Analysis (EDA) on the frontend Dashboard.
 
@@ -126,10 +126,15 @@ Once the application is running (via `make start` or Docker), you can interact w
 ### The Chat Interface (`http://localhost:3000`)
 1. **Asking Questions:** Type your spiritual inquiry into the chat box. Try questions like:
    - *"How can I find peace when my mind is restless?"*
-   - *"What is the purpose of meditation according to Babuji?"*
+   - *"What is prayer and how it helps in our progress?"*
    - *"I feel disconnected from my heart today. Do you have any guidance?"*
 2. **Reading the Response:** The system will stream a response written in a warm, contemplative, "spiritual guide" persona.
+
+![Asking about Prayer](file:///Users/vaibhavdikshit/.gemini/antigravity/brain/213f5365-797d-4fe2-a876-150f35b74724/prayer_response_full_1772797822712.png)
+
 3. **Exploring Citations:** Below the response, you will see citation cards explicitly naming the Author (e.g., *Babuji Maharaj*) and the Date. Click any card to expand it and read the full contextual paragraph the LLM used for its answer.
+
+![Expanding a Citation](file:///Users/vaibhavdikshit/.gemini/antigravity/brain/213f5365-797d-4fe2-a876-150f35b74724/prayer_expanded_citation_1772797847082.png)
 4. **Original Source Documents:** Click the **"PDF"** button on any citation card to open the exact, original PDF document in a new browser tab for deep reading.
 5. **Session Memory:** The chatbot remembers your conversation. You can ask follow-up questions like *"Tell me more about what he meant by that."*
 6. **PDF Download:** Click the download icon in the top right of the assistant's response bubble to export the conversation as a beautifully formatted PDF.
@@ -137,9 +142,11 @@ Once the application is running (via `make start` or Docker), you can interact w
 ### The EDA Dashboard (`http://localhost:3000/dashboard`)
 Click the **"Explore Archives & Stats"** button in the top right of the Chat Interface to access the Exploratory Data Analysis (EDA) dashboard.
 
-1. **Statistical Overview:** View top-level KPIs, including the total number of unique messages (currently ~4,794) and the total pages scanned.
-2. **Temporal Analysis:** Interact with the Recharts-powered graphs to see the distribution of messages over years and the seasonal distribution across months.
-3. **Semantic Search Repository:** Scroll down to the Data Table to perform direct, full-text semantic searches across the entire `messages.db` SQLite repository. 
+![Messages by Year](file:///Users/vaibhavdikshit/.gemini/antigravity/brain/213f5365-797d-4fe2-a876-150f35b74724/media__1772797619012.png)
+
+1. **Statistical Overview:** View top-level KPIs, including the total number of unique messages (currently 4,681) and the total pages scanned.
+2. **Temporal Analysis:** Interact with the Recharts-powered graphs to see the distribution of messages over exact years (e.g., 1991 - 2017) and the seasonal distribution across months.
+3. **Repository Search:** Scroll down to the Data Table to perform direct, full-text semantic searches across the entire `messages.db` SQLite repository. The **Repository Search** interface enables researchers to quickly locate specific phrases or concepts from any author, across the entire decade-spanning dataset.
 4. **Direct Access:** Use the search bar to find specific keywords across all documents, and use the inline PDF links to download or view the original source files directly.
 
 ## 9. Testing, Linting & CI
