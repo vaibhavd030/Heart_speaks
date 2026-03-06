@@ -25,7 +25,9 @@ app.add_middleware(
 import os
 from fastapi.staticfiles import StaticFiles
 
-data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data")
+from heart_speaks.config import settings
+
+data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", settings.data_dir.replace("./", "")))
 if os.path.exists(data_dir):
     app.mount("/data", StaticFiles(directory=data_dir), name="data")
 
@@ -142,3 +144,15 @@ async def chat_stream_endpoint(request: ChatRequest) -> StreamingResponse:
 def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy"}
+
+@app.get("/stats")
+def get_dashboard_stats() -> dict[str, Any]:
+    """Returns EDA statistics for the dashboard."""
+    from heart_speaks.repository import get_stats
+    return get_stats()
+
+@app.get("/messages")
+def get_message_list(query: str = "", page: int = 1, limit: int = 50) -> dict[str, Any]:
+    """Returns a paginated list of messages from the repository."""
+    from heart_speaks.repository import search_messages
+    return search_messages(query, page, limit)

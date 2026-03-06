@@ -27,7 +27,24 @@ class FlashRankRetriever(BaseRetriever):
             query, config={"callbacks": run_manager.get_child()}
         )
         compressed_docs = self.compressor.compress_documents(docs, query)
-        return list(compressed_docs)
+        
+        compressed_docs = list(compressed_docs)
+        
+        # Diversity deduplication: remove near-duplicate chunks (cosine > 0.85)
+        if len(compressed_docs) > 1:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+            from sklearn.metrics.pairwise import cosine_similarity
+        
+            texts = [d.page_content for d in compressed_docs]
+            tfidf = TfidfVectorizer().fit_transform(texts)
+            sim_matrix = cosine_similarity(tfidf)
+            keep = [0]
+            for i in range(1, len(compressed_docs)):
+                if all(sim_matrix[i][j] < 0.85 for j in keep):
+                    keep.append(i)
+            compressed_docs = [compressed_docs[i] for i in keep]
+            
+        return compressed_docs
 
 
 @lru_cache(maxsize=1)

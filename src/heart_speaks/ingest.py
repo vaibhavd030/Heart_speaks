@@ -13,20 +13,36 @@ from loguru import logger
 from heart_speaks.config import settings
 
 
-def extract_datetime_from_filename(filename: str) -> str:
-    """Extracts date/time from common patterns in filename if possible.
+import datetime
+
+def parse_whisper_filename(filename: str) -> tuple[str, str]:
+    """Extracts Date and Author from the new structured dataset filenames.
+    Format: Day_Month_Date_Year_Hour_Min_AMPM_Author.pdf
+    Example: Friday_February_1_1991_7_16_AM_Babuji Maharaj.pdf
     
-    Args:
-        filename (str): The name of the file to parse.
-        
     Returns:
-        str: The extracted date string (YYYY-MM-DD) or 'Unknown'.
+        tuple[str, str]: (Formatted Date YYYY-MM-DD, Author Name)
     """
-    # This is a naive implementation; depending on the exact format, you might want to adjust regex
-    match = re.search(r'\d{4}-\d{2}-\d{2}', filename)
-    if match:
-        return match.group(0)
-    return "Unknown"
+    clean_name = os.path.basename(filename).replace(".pdf", "")
+    parts = clean_name.split("_")
+    
+    if len(parts) < 8:
+        return "Unknown", "Spiritual Guide"
+        
+    # parts Example: ['Friday', 'February', '1', '1991', '7', '16', 'AM', 'Babuji Maharaj']
+    month_str = parts[1]
+    day_str = parts[2]
+    year_str = parts[3]
+    author = parts[7]
+    
+    try:
+        # Convert to strict YYYY-MM-DD
+        date_obj = datetime.datetime.strptime(f"{month_str} {day_str} {year_str}", "%B %d %Y")
+        formatted_date = date_obj.strftime("%Y-%m-%d")
+    except ValueError:
+        formatted_date = f"{year_str}-{month_str}-{day_str}"
+        
+    return formatted_date, author
 
 def get_vector_store() -> Chroma:
     """Returns the initialized Chroma VectorStore interface.
@@ -69,7 +85,7 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
         try:
             loader = PyPDFLoader(pdf_file)
             docs.extend(loader.load())
-        except (OSError, ValueError, pypdf.errors.PyPdfError) as e:
+        except Exception as e:
             logger.error(f"Failed to load {pdf_file}: {e}")
     
     if not docs:
@@ -85,14 +101,17 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
     docs_by_file = {}
     for doc in docs:
         source = doc.metadata.get("source", "Unknown")
-        filename = os.path.basename(source)
-        date = extract_datetime_from_filename(filename)
+        # Store relative path so FastAPI StaticFiles can find files in nested directories
+        filename = os.path.relpath(source, data_path) if source != "Unknown" else "Unknown"
+        date, author = parse_whisper_filename(filename)
         
         doc.metadata["date"] = date
+        doc.metadata["author"] = author
         doc.metadata["source_file"] = filename
+        doc.metadata["personality"] = docs_by_file.get(filename, {}).get("author", "Unknown") if docs_by_file else author
         
         if filename not in docs_by_file:
-            docs_by_file[filename] = {"text": "", "pages": 0, "date": date}
+            docs_by_file[filename] = {"text": "", "pages": 0, "date": date, "author": author}
         docs_by_file[filename]["text"] = str(docs_by_file[filename]["text"]) + str(doc.page_content) + "\n\n"
         docs_by_file[filename]["pages"] = int(docs_by_file[filename]["pages"]) + 1 # type: ignore
         
@@ -101,40 +120,10 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
     for filename, data in docs_by_file.items():
         full_text_str = str(data["text"]).strip()
         
-        # Extract author from the last non-empty line
-        author = "Spiritual Guide"
-        lines = [line.strip() for line in full_text_str.split('\n') if line.strip()]
-        
-        # Look backwards from the end, skipping pure numbers (like page numbers)
-        for line in reversed(lines):
-            if line.replace('.', '').replace(',', '').isdigit():
-                continue
-            
-            # We assume the author name/signature is a short line at the very end
-            if len(line) < 50:
-                author = line
-                break
-            else:
-                break
-
-        # Fallback to filename heuristics if the extracted author seems invalid
-        if author == "Spiritual Guide" or len(author) > 50:
-            filename_lower = filename.lower()
-            if "babuji" in filename_lower: 
-                author = "Babuji"
-            elif "chariji" in filename_lower: 
-                author = "Chariji"
-            elif "daaji" in filename_lower: 
-                author = "Daaji"
-            elif "lalaji" in filename_lower:
-                author = "Lalaji"
-            else:
-                author = "Spiritual Guide"
-            
         upsert_message(
             source_file=filename,
             full_text=full_text_str,
-            author=author,
+            author=str(data["author"]),
             date=str(data["date"]),
             page_count=int(data["pages"]) # type: ignore
         )

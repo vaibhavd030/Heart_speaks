@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     """
     openai_api_key: str = Field(default="", description="OpenAI API Key")
     chroma_persist_dir: str = Field(default="./chroma_db", description="ChromaDB persistence directory")
-    data_dir: str = Field(default="./data", description="Data directory containing PDF documents")
+    data_dir: str = Field(default="./All_Whispers_message", description="Data directory containing PDF documents")
     log_level: str = Field(default="INFO", description="Logging level")
     
     # LangSmith Tracing
@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     chunk_overlap: int = Field(default=200, description="Chunk overlap for document splitting")
     top_k: int = Field(default=25, description="Initial retrieval top K documents")
     rerank_top_k: int = Field(default=8, description="Post-reranking top K documents")
+    generation_model: str = Field(default="gpt-4o", description="Model for response generation")
 
     model_config = SettingsConfigDict(
         env_file=".env",

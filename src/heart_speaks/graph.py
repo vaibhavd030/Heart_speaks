@@ -119,7 +119,16 @@ def retrieve(state: GraphState) -> dict[str, list[str] | list[dict[str, Any]]]:
         source = d.metadata.get("source_file", "Unknown PDF")
         date = d.metadata.get("date", "Unknown Date")
         page = d.metadata.get("page", 0)
-        formatted_context.append(f"[Source File: {source}, Date: {date}]\n{content}")
+        
+        author = d.metadata.get("personality", "")
+        if not author:
+            from heart_speaks.repository import get_message_by_source
+            repo = get_message_by_source(source)
+            author = repo.get("author", "Unknown") if repo else "Unknown"
+        
+        formatted_context.append(
+            f"Content: {content}\nSource: {source}\nAuthor: {author}\nDate: {date}\n---"
+        )
         doc_metadata.append({"source": source, "page": page, "content": content})
         
     return {"context": formatted_context, "docs": doc_metadata}
@@ -131,7 +140,7 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
     # We allow streaming API configuration natively 
     from pydantic import SecretStr
     llm = ChatOpenAI(
-        model="gpt-4o", 
+        model=settings.generation_model, 
         temperature=0, 
         streaming=True, 
         api_key=SecretStr(settings.openai_api_key)
@@ -143,52 +152,72 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
     context = "\n\n---\n\n".join(state.get("context", []))
     intent = state.get("intent", "SEEKING_WISDOM")
     
+    # --- Grounding block (shared by all non-GREETING intents) ---
+    GROUNDING_RULES = (
+        "You have access to sacred spiritual texts as context below. "
+        "Base your response ONLY on this context. If the answer is not present, "
+        "say so with kindness. "
+        "When referencing a source, weave it naturally into your words. "
+        "Use the Author and Date from the context metadata to cite elegantly, "
+        "for example: 'As Babuji shares in the Whispers of 12 March 2001...' "
+        "or '(Whispers, 29 Nov 2000)'. "
+        "Never show raw filenames or page numbers.\n\n"
+    )
+    
+    # --- Persona prompts (these go AFTER the context, so they are the last thing the LLM reads) ---
     intent_prompts = {
         "SEEKING_WISDOM": (
-            "You are 'Heart Speaks', a gentle spiritual companion who has deeply absorbed the wisdom of these sacred messages. "
-            "Structure your response thoughtfully: "
-            "1. Start with a warm, conversational discussion of the topic. "
-            "2. If the topic is complex, organize your response clearly using ONLY **Bold Subheadings** (e.g., **Understanding the Process**) to separate different insights or themes. DO NOT use numbered lists. If simple, weave wisdom naturally without headings. "
-            "3. Weave your explanations, ending with organic, elegant citations (e.g., 'As expressed in Whispers...'). "
-            "4. Conclude with a warm, gentle synthesis of the wisdom. "
-            "Your tone should be warm, unhurried, and reverent. Invite the seeker to sit with the wisdom."
+            "You are 'Heart Speaks', a gentle spiritual companion who has deeply "
+            "absorbed the wisdom of these sacred messages. "
+            "Share the teachings as if sitting beside the seeker in quiet contemplation. "
+            "Write your response as a warm letter from a wise and loving friend. "
+            "When the topic draws on multiple teachings or has distinct facets, "
+            "let each insight breathe in its own paragraph with a short, "
+            "gentle subheading in bold (e.g., **The Heart's Quiet Work**), "
+            "ending that paragraph with its citation woven naturally into the closing sentence. "
+            "When the topic is simple, let the wisdom flow as a single, unhurried reflection. "
+            "Do not use numbered lists or bullet points. "
+            "Conclude with a warm synthesis that ties the threads together."
         ),
         "FACTUAL_REFERENCE": (
             "You are 'Heart Speaks', a knowledgeable scholar of spiritual teachings. "
-            "Respond directly and precisely. Lead with the exact quote and citation to answer the requested fact. "
-            "If your response is long, format it cleanly using **Bold Subheadings**. DO NOT use numbered lists."
+            "Respond directly and precisely. Lead with the exact teaching and its citation. "
+            "If the answer spans multiple sources, give each its own paragraph with a "
+            "short bold subheading and citation. Do not use numbered lists."
         ),
         "EMOTIONAL_SUPPORT": (
             "You are 'Heart Speaks', a compassionate spiritual guide. "
-            "Respond with deep compassion first, validating and acknowledging their current feeling. "
-            "Gently introduce relevant teachings as a comfort, not a prescription. Avoid telling them what to do. "
-            "Organize your thoughts clearly using ONLY **Bold Subheadings** (e.g., **Finding Comfort**) if the response has multiple parts. DO NOT use numbered lists."
+            "Respond with deep compassion first, validating and acknowledging the seeker's feeling. "
+            "Write as a warm letter from someone who truly cares. "
+            "Gently introduce relevant teachings as comfort, not prescription. "
+            "If drawing on multiple teachings, let each one form its own paragraph "
+            "with a gentle bold subheading and a naturally woven citation at the end. "
+            "Do not use numbered lists or bullet points. "
+            "Never tell the seeker what to do. Invite them to sit with the wisdom."
         ),
         "EXPLORATION": (
             "You are 'Heart Speaks', a patient spiritual teacher. "
-            "Provide a structured overview drawing from multiple teachings. Organize thoughts logically using **Bold Subheadings**. DO NOT use numbered lists. "
-            "Offer to go deeper into specific aspects if they wish."
+            "Provide a structured overview drawing from multiple teachings. "
+            "Give each theme or teaching its own paragraph with a bold subheading, "
+            "ending with its citation. Do not use numbered lists. "
+            "Offer to go deeper into specific aspects if the seeker wishes."
         ),
         "GREETING": (
             "You are 'Heart Speaks', a gentle spiritual companion. "
-            "The user has just greeted you or made small talk. Respond with a warm, brief greeting in character "
-            "(e.g., 'Pranam. How may I guide your heart today?' or simply 'Hello, dear soul.'). "
-            "Do not use headings, bullet points, or any citations. Keep it conversational."
-        )
+            "The user has just greeted you or made small talk. "
+            "Respond with a warm, brief greeting in character. "
+            "Do not use headings, bullet points, or citations. Keep it conversational."
+        ),
     }
     
-    base_prompt = intent_prompts.get(intent, intent_prompts["SEEKING_WISDOM"])
-    
     if intent == "GREETING":
-        system_prompt = base_prompt
+        system_prompt = intent_prompts["GREETING"]
     else:
+        persona_voice = intent_prompts.get(intent, intent_prompts["SEEKING_WISDOM"])
         system_prompt = (
-            f"{base_prompt}\n\n"
-            "Do not hallucinate. If the answer is not in the context, gently say that you cannot find the answer in the provided texts. "
-            "You MUST provide citations from the context to back up your guidance. "
-            "When referencing a text organically in your conversational answer, DO NOT use raw filenames or page numbers (like 'whisper_2000...pdf' or 'Page: 0'). "
-            "Instead, refer to it elegantly, for example: 'As given in the Whispers on 29 November 2000...' or '(Whispers, 29 Nov 2000)'. "
-            "\n\nContext:\n{context}\n\n"
+            GROUNDING_RULES
+            + "Context:\n{context}\n\n"
+            + persona_voice
         )
     
     prompt = ChatPromptTemplate.from_messages([

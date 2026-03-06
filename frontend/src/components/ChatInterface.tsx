@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, Loader2, BookOpen, Feather, FileDown } from 'lucide-react';
+import Link from 'next/link';
+import { Send, User, Bot, Loader2, BookOpen, Feather, FileDown, BarChart3 } from 'lucide-react';
 import { sendMessageStream } from '@/lib/api';
 import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
@@ -335,6 +336,10 @@ export function ChatInterface() {
                 </div>
                 <div className="block text-center md:absolute md:top-8 md:right-12">
                     <p className="font-heading italic text-xl text-ink/70">{currentDate}</p>
+                    <Link href="/dashboard" className="flex flex-col sm:flex-row items-center gap-2 mt-4 justify-center md:justify-end text-gold-accent hover:text-ink transition-colors font-heading italic text-sm border border-gold-accent/30 bg-gold-accent/5 px-4 py-2 rounded-full">
+                        <BarChart3 size={16} />
+                        <span>Explore Archives & Stats</span>
+                    </Link>
                 </div>
             </header>
 

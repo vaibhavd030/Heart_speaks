@@ -2,19 +2,26 @@ from unittest.mock import MagicMock, patch
 
 from langchain_core.documents import Document
 
-from heart_speaks.ingest import extract_datetime_from_filename, ingest_data
+from heart_speaks.ingest import ingest_data, parse_whisper_filename
 
 
-def test_extract_datetime_from_filename() -> None:
-    """Test extraction of date from filenames."""
-    assert extract_datetime_from_filename("Discourse_2023-05-12.pdf") == "2023-05-12"
-    assert extract_datetime_from_filename("2020-01-01_talk.pdf") == "2020-01-01"
-    assert extract_datetime_from_filename("unknown_file.pdf") == "Unknown"
+def test_parse_whisper_filename() -> None:
+    """Test extraction of date and author from structured filenames."""
+    # Valid format
+    date, author = parse_whisper_filename("Friday_February_1_1991_7_16_AM_Babuji Maharaj.pdf")
+    assert date == "1991-02-01"
+    assert author == "Babuji Maharaj"
+    
+    # Invalid or short name
+    date, author = parse_whisper_filename("unknown_file.pdf")
+    assert date == "Unknown"
+    assert author == "Spiritual Guide"
 
+@patch('heart_speaks.repository.upsert_message')
 @patch('heart_speaks.ingest.get_vector_store')
 @patch('heart_speaks.ingest.glob')
 @patch('heart_speaks.ingest.PyPDFLoader')
-def test_ingest_data(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_store: MagicMock) -> None:
+def test_ingest_data(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_store: MagicMock, mock_upsert: MagicMock) -> None:
     """Test the ingestion pipeline's core loops."""
     # Mock finding files
     mock_glob.glob.return_value = ["fake_dir/fake1.pdf"]
@@ -38,10 +45,11 @@ def test_ingest_data(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_stor
     mock_loader.assert_called_once_with("fake_dir/fake1.pdf")
     mock_store.add_documents.assert_called_once()
 
+@patch('heart_speaks.repository.upsert_message')
 @patch('heart_speaks.ingest.get_vector_store')
 @patch('heart_speaks.ingest.glob')
 @patch('heart_speaks.ingest.PyPDFLoader')
-def test_ingest_data_exception_handling(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_store: MagicMock) -> None:
+def test_ingest_data_exception_handling(mock_loader: MagicMock, mock_glob: MagicMock, mock_get_store: MagicMock, mock_upsert: MagicMock) -> None:
     """Test that ingestion continues if one document fails to load."""
     mock_glob.glob.return_value = ["fake_dir/good.pdf", "fake_dir/bad.pdf"]
     

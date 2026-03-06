@@ -41,5 +41,9 @@ data/*.pdf
 # Project instructions
 improvement.md
 improvementv2.md
+improvementv3.md
 instructions.md
 data/messages.db
+All_Whispers_message/
+old_chroma_db/
+old_data/

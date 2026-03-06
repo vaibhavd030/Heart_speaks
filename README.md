@@ -2,8 +2,14 @@
 
 ## 1. Project Description
 Heart Speaks is a production-grade RAG (Retrieval-Augmented Generation) chatbot designed to read thousands of spiritual messages and discourse transcripts in PDF format and answer questions with precise, clickable citations. It features a bespoke React UI that intelligently extracts true author signatures and provides a peaceful reading experience.
+## 2. Dataset Description & Statistics
+The primary knowledge base consists of the **"All Whispers Messages"** dataset, a comprehensively curated collection of transcribed spiritual discourses and messages.
+- **Total Documents:** ~9,900 indexed PDF transcripts.
+- **Date Range:** Detailed records spanning from the early 1990s through recent years (e.g., 1991 - 2014+).
+- **Authorship:** Insights drawn directly from spiritual guides (e.g., Babuji Maharaj) as identified through filename metadata signatures.
+- **Organization:** The raw repository is strictly chronologically partitioned (`/YYYY/Month/Message.pdf`) to enable deep Exploratory Data Analysis (EDA) on the frontend Dashboard.
 
-## 2. Architecture & Features
+## 3. Architecture & Features
 - **Frontend**: A custom **Next.js** implementation boasting beautiful, spiritual aesthetics (Parchment backgrounds, Tailwind V4 CSS) and compact, expandable citation cards with PDF downloads and integrated Author extraction.
 - **Backend**: A headless **FastAPI** REST API serving chat generation and static PDF files (mounted via `data/`).
 - **Orchestration**: Built using **LangGraph**. Features an integrated prompt-injection validation guardrail (via OpenAI's Moderation API) and seamless conversational history routing.
@@ -15,7 +21,7 @@ Heart Speaks is a production-grade RAG (Retrieval-Augmented Generation) chatbot 
 - **Message Repository**: Utilizes a standalone **SQLite** database (`messages.db`) to map semantic chunks back to their full-text original source, ensuring citations expand to provide maximum context including date and parsed author signature.
 - **Evaluation**: Enforces strict **Ragas** metric thresholds over a golden dataset.
 
-## 3. Architecture Diagram
+## 4. Architecture Diagram
 
 ```mermaid
 graph TD
@@ -48,14 +54,14 @@ graph TD
     O -->|Rich Citation Cards| E
 ```
 
-## 4. Ragas Evaluation Metrics (Latest)
+## 5. Ragas Evaluation Metrics (Latest)
 Our CI pipeline enforces strict thresholds over our golden datasets. The latest run achieved the following standard-setting metrics:
 *   **Faithfulness**: `1.000` (Perfect grounding; zero hallucinations)
 *   **Answer Relevancy**: `0.920` (Excellent structural synthesis)
 *   **Context Recall**: `0.800` (Exceptional retrieval capture)
 *   **Context Precision**: `0.766` (Highly accurate ranking)
 
-## 5. Full Folder Structure
+## 6. Full Folder Structure
 
 ```
 ├── Makefile             # Automation wrapper
@@ -87,7 +93,7 @@ Our CI pipeline enforces strict thresholds over our golden datasets. The latest 
         └── test_smoke.py  # End-to-end LangGraph integration tests
 ```
 
-## 6. Installation & Run Instructions
+## 7. Installation & Run Instructions
 
 **Prerequisites:** Assumes `uv` is installed globally (`curl -LsSf https://astral.sh/uv/install.sh | sh`), `npm` is installed, and `.env` file exists with the `OPENAI_API_KEY`.
 
@@ -112,6 +118,6 @@ You can easily spin up the entire architecture (FastAPI Backend + Next.js Fronte
 ```bash
 docker-compose up --build -d
 ```
-## 7. Testing, Linting & CI
+## 8. Testing, Linting & CI
 - **GitHub Actions**: Automated CI pipeline runs `ruff` linting, `black` formatting, `mypy` type-checking, and `pytest` on all PRs.
 - **Ragas Evaluations**: `make eval` will fail CI blocks if your retrieval or language models dip below the strict quality bar defined in the script.
