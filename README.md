@@ -118,6 +118,30 @@ You can easily spin up the entire architecture (FastAPI Backend + Next.js Fronte
 ```bash
 docker-compose up --build -d
 ```
-## 8. Testing, Linting & CI
+
+## 8. Walkthrough & Sample Usage
+
+Once the application is running (via `make start` or Docker), you can interact with Heart Speaks through the intuitive React interface.
+
+### The Chat Interface (`http://localhost:3000`)
+1. **Asking Questions:** Type your spiritual inquiry into the chat box. Try questions like:
+   - *"How can I find peace when my mind is restless?"*
+   - *"What is the purpose of meditation according to Babuji?"*
+   - *"I feel disconnected from my heart today. Do you have any guidance?"*
+2. **Reading the Response:** The system will stream a response written in a warm, contemplative, "spiritual guide" persona.
+3. **Exploring Citations:** Below the response, you will see citation cards explicitly naming the Author (e.g., *Babuji Maharaj*) and the Date. Click any card to expand it and read the full contextual paragraph the LLM used for its answer.
+4. **Original Source Documents:** Click the **"PDF"** button on any citation card to open the exact, original PDF document in a new browser tab for deep reading.
+5. **Session Memory:** The chatbot remembers your conversation. You can ask follow-up questions like *"Tell me more about what he meant by that."*
+6. **PDF Download:** Click the download icon in the top right of the assistant's response bubble to export the conversation as a beautifully formatted PDF.
+
+### The EDA Dashboard (`http://localhost:3000/dashboard`)
+Click the **"Explore Archives & Stats"** button in the top right of the Chat Interface to access the Exploratory Data Analysis (EDA) dashboard.
+
+1. **Statistical Overview:** View top-level KPIs, including the total number of unique messages (currently ~4,794) and the total pages scanned.
+2. **Temporal Analysis:** Interact with the Recharts-powered graphs to see the distribution of messages over years and the seasonal distribution across months.
+3. **Semantic Search Repository:** Scroll down to the Data Table to perform direct, full-text semantic searches across the entire `messages.db` SQLite repository. 
+4. **Direct Access:** Use the search bar to find specific keywords across all documents, and use the inline PDF links to download or view the original source files directly.
+
+## 9. Testing, Linting & CI
 - **GitHub Actions**: Automated CI pipeline runs `ruff` linting, `black` formatting, `mypy` type-checking, and `pytest` on all PRs.
 - **Ragas Evaluations**: `make eval` will fail CI blocks if your retrieval or language models dip below the strict quality bar defined in the script.
