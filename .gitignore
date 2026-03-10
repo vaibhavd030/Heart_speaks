@@ -47,3 +47,8 @@ data/messages.db
 All_Whispers_message/
 old_chroma_db/
 old_data/
+logs/
+eBook
+instructions/
+messages.db
+scripts/
