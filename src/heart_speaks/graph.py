@@ -145,14 +145,25 @@ def retrieve(state: GraphState) -> dict[str, list[str] | list[dict[str, Any]]]:
         page = d.metadata.get("page", 0)
 
         author = d.metadata.get("personality", "")
-        if not author:
+        if not author or author == "Unknown":
             from heart_speaks.repository import get_message_by_source
 
             repo = get_message_by_source(source)
             author = repo.get("author", "Unknown") if repo else "Unknown"
 
+        # Extract precise date and time from filename (e.g., Friday_February_1_1991_12_00_AM_Babuji Maharaj.pdf)
+        formatted_date_time = date
+        try:
+            name_parts = source.split("/")[-1].replace(".pdf", "").split("_")
+            if len(name_parts) >= 7:
+                month, day, year, hour, minute, ampm = name_parts[1], name_parts[2], name_parts[3], name_parts[4], name_parts[5], name_parts[6].lower()
+                time_str = f"{hour}{ampm}" if minute == "00" else f"{hour}:{minute}{ampm}"
+                formatted_date_time = f"{month} {day}, {year} {time_str}"
+        except Exception:
+            pass
+
         formatted_context.append(
-            f"Content: {content}\nSource: {source}\nAuthor: {author}\nDate: {date}\n---"
+            f"Content: {content}\nSource: {source}\nAuthor: {author}\nDate: {formatted_date_time}\n---"
         )
         doc_metadata.append({"source": source, "page": page, "content": content})
 
@@ -185,8 +196,8 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
         "Base your response ONLY on this context. If the answer is not present, "
         "say so with kindness. "
         "When referencing a source, you MUST always end each teaching or paragraph with a citation "
-        "in this exact format: (Author, Month Day, Year). For example: (Babuji, May 12, 2004) "
-        "or (Unknown, November 9, 2016). Do not use the word 'Whispers' in the citation. "
+        "in this exact format: (Author, Month Day, Year Time). For example: (Babuji, May 12, 2004 8am) "
+        "or (Unknown, November 9, 2016 10:30am). Do not use the word 'Whispers' in the citation. "
         "Never show raw filenames or page numbers.\n\n"
     )
 

@@ -24,6 +24,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+from fastapi.staticfiles import StaticFiles
+from heart_speaks.config import settings
+
+# Mount real storage location for PDFs
+data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", settings.data_dir.replace("./", "")))
+if os.path.exists(data_dir):
+    app.mount("/data", StaticFiles(directory=data_dir), name="data")
 
 # In-memory session store
 sessions: dict[str, Any] = {}
