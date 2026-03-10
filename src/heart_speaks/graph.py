@@ -184,10 +184,9 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
         "You have access to sacred spiritual texts as context below. "
         "Base your response ONLY on this context. If the answer is not present, "
         "say so with kindness. "
-        "When referencing a source, weave it naturally into your words. "
-        "Use the Author and Date from the context metadata to cite elegantly, "
-        "for example: 'As Babuji shares in the Whispers of 12 March 2001...' "
-        "or '(Whispers, 29 Nov 2000)'. "
+        "When referencing a source, you MUST always end each teaching or paragraph with a citation "
+        "in this exact format: (Author, Month Day, Year). For example: (Babuji, May 12, 2004) "
+        "or (Unknown, November 9, 2016). Do not use the word 'Whispers' in the citation. "
         "Never show raw filenames or page numbers.\n\n"
     )
 
