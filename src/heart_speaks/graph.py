@@ -5,7 +5,6 @@ from typing import Annotated, TypedDict
 from langchain_community.cache import SQLiteCache
 from langchain_core.globals import set_llm_cache
 from langchain_core.messages import BaseMessage
-from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
@@ -15,55 +14,75 @@ from openai import OpenAI
 from pydantic import BaseModel, Field
 
 from heart_speaks.config import settings
-from heart_speaks.models import LLMResponse
 from heart_speaks.retriever import get_reranking_retriever
 
 # Enable LLM response caching to save time and API costs
 if settings.enable_llm_cache:
     os.makedirs(settings.cache_dir, exist_ok=True)
-    set_llm_cache(SQLiteCache(database_path=os.path.join(settings.cache_dir, "llm_cache.db")))
+    set_llm_cache(
+        SQLiteCache(database_path=os.path.join(settings.cache_dir, "llm_cache.db"))
+    )
 
 
 from typing import Any
 
+
 class GraphState(TypedDict):
     """Represents the state of our graph."""
+
     messages: Annotated[Sequence[BaseMessage], add_messages]
     context: list[str]
-    docs: list[dict[str, Any]] # source metadata for citation tracking
+    docs: list[dict[str, Any]]  # source metadata for citation tracking
     is_safe: bool
     final_response: dict[str, Any]
     intent: str
-    metadata_filter: dict[str, Any] | None # optional metadata filters
+    metadata_filter: dict[str, Any] | None  # optional metadata filters
+
 
 class IntentClassification(BaseModel):
-    intent: str = Field(description="The intent of the user's question. Must be one of: SEEKING_WISDOM, FACTUAL_REFERENCE, EMOTIONAL_SUPPORT, EXPLORATION, GREETING")
+    intent: str = Field(
+        description="The intent of the user's question. Must be one of: SEEKING_WISDOM, FACTUAL_REFERENCE, EMOTIONAL_SUPPORT, EXPLORATION, GREETING"
+    )
+
 
 def classify_intent(state: GraphState) -> dict[str, str]:
     """Classifies the user's message intent."""
     logger.info("Classifying intent...")
     latest_message = state["messages"][-1].content
     from pydantic import SecretStr
-    llm = ChatOpenAI(model="gpt-4o-mini", api_key=SecretStr(settings.openai_api_key), temperature=0)
+
+    llm = ChatOpenAI(
+        model="gpt-4o-mini", api_key=SecretStr(settings.openai_api_key), temperature=0
+    )
     structured_llm = llm.with_structured_output(IntentClassification)
     try:
-        res = structured_llm.invoke(f"Classify the intent of the following spiritual question. If it is a greeting or small talk, classify as GREETING:\n\n{latest_message}")
-        if isinstance(res, IntentClassification) and res.intent in ["SEEKING_WISDOM", "FACTUAL_REFERENCE", "EMOTIONAL_SUPPORT", "EXPLORATION", "GREETING"]:
+        res = structured_llm.invoke(
+            f"Classify the intent of the following spiritual question. If it is a greeting or small talk, classify as GREETING:\n\n{latest_message}"
+        )
+        if isinstance(res, IntentClassification) and res.intent in [
+            "SEEKING_WISDOM",
+            "FACTUAL_REFERENCE",
+            "EMOTIONAL_SUPPORT",
+            "EXPLORATION",
+            "GREETING",
+        ]:
             intent = res.intent
         else:
             intent = "SEEKING_WISDOM"
     except Exception as e:
         logger.warning(f"Intent classification failed: {e}")
         intent = "SEEKING_WISDOM"
-        
+
     logger.info(f"Classified intent: {intent}")
     return {"intent": intent}
+
 
 def route_intent(state: GraphState) -> str:
     """Routes greetings directly to generation, skipping retrieval."""
     if state.get("intent") == "GREETING":
         return "generate"
     return "retrieve"
+
 
 def check_prompt_injection(state: GraphState) -> dict[str, bool]:
     """Analyzes the latest user message for potential prompt injections or malicious intent using OpenAI Moderation API.
@@ -76,7 +95,7 @@ def check_prompt_injection(state: GraphState) -> dict[str, bool]:
     """
     logger.info("Checking for prompt injections via Moderation API...")
     latest_message = state["messages"][-1].content
-    
+
     try:
         client = OpenAI(api_key=settings.openai_api_key)
         # Using the standard moderations endpoint which is free and very fast
@@ -86,8 +105,9 @@ def check_prompt_injection(state: GraphState) -> dict[str, bool]:
     except Exception as e:
         logger.warning(f"Moderation API check failed, assuming safe to proceed: {e}")
         is_safe = True
-        
+
     return {"is_safe": is_safe}
+
 
 def route_safety(state: GraphState) -> str:
     """Routes to classification if safe, else ends the graph."""
@@ -96,22 +116,26 @@ def route_safety(state: GraphState) -> str:
     logger.warning("Prompt injection detected. Halting.")
     return "unsafe_response"
 
+
 def unsafe_response(state: GraphState) -> dict[str, dict[str, Any]]:
     """Returns a canned response for malicious input."""
-    return {"final_response": {
-        "answer": "I cannot fulfill this request as it violates safety guidelines.",
-        "citations": []
-    }}
+    return {
+        "final_response": {
+            "answer": "I cannot fulfill this request as it violates safety guidelines.",
+            "citations": [],
+        }
+    }
+
 
 def retrieve(state: GraphState) -> dict[str, list[str] | list[dict[str, Any]]]:
     """Retrieves relevant spiritual chunks from the vector store."""
     logger.info("Retrieving context...")
     latest_message = state["messages"][-1].content
     metadata_filter = state.get("metadata_filter")
-    
+
     retriever = get_reranking_retriever(search_filter=metadata_filter)
     docs = retriever.invoke(str(latest_message))
-    
+
     formatted_context = []
     doc_metadata = []
     for d in docs:
@@ -119,39 +143,42 @@ def retrieve(state: GraphState) -> dict[str, list[str] | list[dict[str, Any]]]:
         source = d.metadata.get("source_file", "Unknown PDF")
         date = d.metadata.get("date", "Unknown Date")
         page = d.metadata.get("page", 0)
-        
+
         author = d.metadata.get("personality", "")
         if not author:
             from heart_speaks.repository import get_message_by_source
+
             repo = get_message_by_source(source)
             author = repo.get("author", "Unknown") if repo else "Unknown"
-        
+
         formatted_context.append(
             f"Content: {content}\nSource: {source}\nAuthor: {author}\nDate: {date}\n---"
         )
         doc_metadata.append({"source": source, "page": page, "content": content})
-        
+
     return {"context": formatted_context, "docs": doc_metadata}
+
 
 def generate(state: GraphState) -> dict[str, dict[str, Any]]:
     """Generates the grounded response using structured outputs and enriches with SQLite full-text."""
     logger.info("Generating response...")
-    
-    # We allow streaming API configuration natively 
+
+    # We allow streaming API configuration natively
     from pydantic import SecretStr
+
     llm = ChatOpenAI(
-        model=settings.generation_model, 
-        temperature=0, 
-        streaming=True, 
-        api_key=SecretStr(settings.openai_api_key)
+        model=settings.generation_model,
+        temperature=0,
+        streaming=True,
+        api_key=SecretStr(settings.openai_api_key),
     )
-    
+
     # We use the previous messages as conversation history
     history = state["messages"][:-1]
     latest_message = state["messages"][-1].content
     context = "\n\n---\n\n".join(state.get("context", []))
     intent = state.get("intent", "SEEKING_WISDOM")
-    
+
     # --- Grounding block (shared by all non-GREETING intents) ---
     GROUNDING_RULES = (
         "You have access to sacred spiritual texts as context below. "
@@ -163,7 +190,7 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
         "or '(Whispers, 29 Nov 2000)'. "
         "Never show raw filenames or page numbers.\n\n"
     )
-    
+
     # --- Persona prompts (these go AFTER the context, so they are the last thing the LLM reads) ---
     intent_prompts = {
         "SEEKING_WISDOM": (
@@ -202,25 +229,23 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
             "Do not use headings, bullet points, or citations. Keep it conversational."
         ),
     }
-    
+
     if intent == "GREETING":
         system_prompt = intent_prompts["GREETING"]
     else:
         persona_voice = intent_prompts.get(intent, intent_prompts["SEEKING_WISDOM"])
-        system_prompt = (
-            GROUNDING_RULES
-            + "Context:\n{context}\n\n"
-            + persona_voice
-        )
-    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("placeholder", "{history}"),
-        ("human", "{question}"),
-    ])
-    
+        system_prompt = GROUNDING_RULES + "Context:\n{context}\n\n" + persona_voice
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            ("placeholder", "{history}"),
+            ("human", "{question}"),
+        ]
+    )
+
     chain = prompt | llm
-    
+
     try:
         response = chain.invoke(
             {
@@ -228,18 +253,20 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
                 "history": history,
                 "question": latest_message,
             },
-            config={"tags": ["final_generation"]}
+            config={"tags": ["final_generation"]},
         )
         logger.info(f"Raw LLM Response: {response.content}")
         answer_text = response.content
     except Exception as e:
         logger.error(f"Error during LLM Generation: {str(e)}")
         # Provide a fallback error response
-        answer_text = "I apologize, but I encountered an error formulating your response."
+        answer_text = (
+            "I apologize, but I encountered an error formulating your response."
+        )
 
     # Enrich all retrieved docs to serve as citations for the UI
     from heart_speaks.repository import get_message_by_source
-    
+
     unique_sources = {}
     for doc in state.get("docs", []):
         src = doc.get("source", "")
@@ -253,32 +280,34 @@ def generate(state: GraphState) -> dict[str, dict[str, Any]]:
         except Exception as e:
             logger.warning(f"Repository lookup failed {e}")
             repo_data = None
-            
+
         if repo_data:
-            rich_sources.append({
-                "author": repo_data.get("author", "Unknown"),
-                "date": str(repo_data.get("date", "Unknown")),
-                "citation": src,
-                "preview": repo_data.get("preview", preview_text),
-                "full_text": repo_data.get("full_text", preview_text)
-            })
+            rich_sources.append(
+                {
+                    "author": repo_data.get("author", "Unknown"),
+                    "date": str(repo_data.get("date", "Unknown")),
+                    "citation": src,
+                    "preview": repo_data.get("preview", preview_text),
+                    "full_text": repo_data.get("full_text", preview_text),
+                }
+            )
         else:
-             rich_sources.append({
-                "author": "Unknown",
-                "date": "Unknown",
-                "citation": src,
-                "preview": preview_text,
-                "full_text": preview_text
-            })
-    
+            rich_sources.append(
+                {
+                    "author": "Unknown",
+                    "date": "Unknown",
+                    "citation": src,
+                    "preview": preview_text,
+                    "full_text": preview_text,
+                }
+            )
+
     # Re-pack the payload to match Next.js ChatInterface
-    final_payload = {
-        "answer": answer_text,
-        "sources": rich_sources
-    }
-    
+    final_payload = {"answer": answer_text, "sources": rich_sources}
+
     # Return serializable dict form for the final response
     return {"final_response": final_payload}
+
 
 # Build the Graph
 workflow = StateGraph(GraphState)

@@ -52,3 +52,5 @@ eBook
 instructions/
 messages.db
 scripts/
+tests/eval/
+tests/logs/

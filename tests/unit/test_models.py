@@ -11,10 +11,12 @@ def test_citation_model_valid() -> None:
     assert citation.page == 1
     assert citation.quote == "test quote"
 
+
 def test_citation_model_invalid() -> None:
     """Test invalid instantiation of Citation model."""
     with pytest.raises(ValidationError):
-        Citation(source="doc.pdf", page="one", quote="test quote") # type: ignore
+        Citation(source="doc.pdf", page="one", quote="test quote")  # type: ignore
+
 
 def test_llm_response_model_valid() -> None:
     """Test valid instantiation of LLMResponse model."""
