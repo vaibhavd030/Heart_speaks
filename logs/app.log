@@ -992,3 +992,224 @@
 2026-03-06 10:41:27.068 | INFO     | __main__:ingest_data:153 - Added batch 98 of 99
 2026-03-06 10:41:27.858 | INFO     | __main__:ingest_data:153 - Added batch 99 of 99
 2026-03-06 10:41:27.859 | INFO     | __main__:ingest_data:155 - Ingestion complete.
+2026-03-10 10:52:58.737 | INFO     | __main__:ingest_data:73 - Starting ingestion process from ./All_Whispers_message
+2026-03-10 10:52:58.737 | INFO     | __main__:ingest_data:80 - Loading documents...
+2026-03-10 10:52:59.305 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2013/August/Friday_August_23_2013_10_00_AM_Babuji Maharaj.pdf: Cannot find Root object in pdf
+2026-03-10 10:52:59.720 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2013/March/Monday_March_25_2013_10_00_AM_Babuji Maharaj.pdf: Cannot find Root object in pdf
+2026-03-10 10:53:00.157 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2014/February/Sunday_February_16_2014_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:00.259 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2014/June/Sunday_June_22_2014_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:00.279 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2014/June/Wednesday_June_18_2014_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:00.754 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2014/March/Monday_March_17_2014_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:00.923 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2015/April/Thursday_April_23_2015_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:01.554 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2015/June/Tuesday_June_16_2015_10_00_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:01.809 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2015/August/Sunday_August_9_2015_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:02.331 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2015/March/Monday_March_16_2015_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:02.638 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2012/October/Monday_October_1_2012_10_00_AM_Babuji Maharaj.pdf: 'NoneType' object is not subscriptable
+2026-03-10 10:53:03.486 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2012/July/Sunday_July_22_2012_10_00_AM_Babuji Maharaj.pdf: 'NoneType' object is not subscriptable
+2026-03-10 10:53:03.633 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2012/August/Monday_August_27_2012_10_00_AM_Babuji Maharaj.pdf: 'NoneType' object is not subscriptable
+2026-03-10 10:53:03.690 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2012/August/Sunday_August_5_2012_10_00_AM_Babuji Maharaj.pdf: Cannot find Root object in pdf
+2026-03-10 10:53:03.777 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2012/November/Wednesday_November_21_2012_10_00_AM_Babuji Maharaj.pdf: Cannot find Root object in pdf
+2026-03-10 10:53:04.208 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2012/September/Tuesday_September_18_2012_10_00_AM_Babuji Maharaj.pdf: Cannot find Root object in pdf
+2026-03-10 10:53:04.626 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/April/Tuesday_April_24_2001_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:04.626 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/April/Monday_April_9_2001_8_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:05.400 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Friday_February_2_2001_7_30_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:05.427 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Saturday_February_3_2001_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:05.432 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Friday_February_2_2001_10_00_AM_Lalaji Maharaj.pdf: list index out of range
+2026-03-10 10:53:05.448 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Thursday_February_1_2001_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:05.451 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Thursday_February_1_2001_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:05.485 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Saturday_February_24_2001_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:05.493 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/February/Thursday_February_8_2001_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:05.903 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/July/Tuesday_July_3_2001_10_00_AM_Babuji Maharaj.pdf: argument of type 'NumberObject' is not iterable
+2026-03-10 10:53:06.183 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/August/Friday_August_31_2001_10_00_AM_Babuji Maharaj.pdf: 'NoneType' object has no attribute 'get_object'
+2026-03-10 10:53:06.776 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/January/Monday_January_15_2001_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:06.846 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/January/Friday_January_19_2001_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:06.852 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/January/Sunday_January_21_2001_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:06.865 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/January/Thursday_January_25_2001_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:06.909 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/January/Thursday_January_18_2001_9_30_PM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:06.986 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Wednesday_March_21_2001_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:06.988 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Saturday_March_3_2001_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:06.994 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Tuesday_March_27_2001_8_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:07.010 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Friday_March_9_2001_8_00_AM_Babuji Maharaj.pdf: startxref not found
+2026-03-10 10:53:07.034 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Wednesday_March_7_2001_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.044 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Tuesday_March_6_2001_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:07.057 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Wednesday_March_14_2001_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.079 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Friday_March_23_2001_12_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.108 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Saturday_March_17_2001_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.118 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Saturday_March_24_2001_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:07.147 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Monday_March_12_2001_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.165 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Tuesday_March_27_2001_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.176 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Tuesday_March_6_2001_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:07.179 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2001/March/Wednesday_March_21_2001_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:08.481 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/October/Monday_October_16_2000_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:08.526 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/October/Wednesday_October_4_2000_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:08.710 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/December/Thursday_December_14_2000_10_00_AM_Babuji Maharaj.pdf: 'NoneType' object has no attribute 'get_object'
+2026-03-10 10:53:08.791 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/December/Friday_December_29_2000_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:08.806 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/December/Monday_December_25_2000_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:08.815 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/December/Sunday_December_17_2000_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:08.860 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/February/Friday_February_25_2000_5_00_PM_Babuji Maharaj.pdf: startxref not found
+2026-03-10 10:53:09.026 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/August/Wednesday_August_23_2000_4_00_PM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:09.050 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/August/Saturday_August_19_2000_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:09.205 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/November/Monday_November_20_2000_8_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:09.217 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/November/Wednesday_November_15_2000_8_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:09.494 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/January/Friday_January_21_2000_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:09.613 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/January/Tuesday_January_18_2000_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:09.712 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/March/Saturday_March_18_2000_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:09.864 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/September/Thursday_September_28_2000_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:09.883 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2000/September/Sunday_September_17_2000_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:10.478 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2017/February/Saturday_February_25_2017_10_30_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:10.482 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2017/February/Sunday_February_19_2017_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:10.612 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2017/May/Friday_May_19_2017_10_00_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:10.731 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2017/March/Saturday_March_4_2017_10_00_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:11.937 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/April/Monday_April_18_2016_10_00_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:12.262 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/February/Sunday_February_28_2016_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:12.379 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/June/Monday_June_13_2016_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:12.635 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/August/Friday_August_26_2016_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:12.647 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/August/Sunday_August_21_2016_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:12.838 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/May/Tuesday_May_3_2016_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:12.974 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/November/Saturday_November_12_2016_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:12.993 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/November/Monday_November_14_2016_10_00_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:13.105 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/January/Monday_January_11_2016_10_00_AM_Babuji Maharaj.pdf: only Standard PDF encryption handler is available
+2026-03-10 10:53:13.196 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/January/Wednesday_January_13_2016_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:13.198 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2016/January/Sunday_January_10_2016_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:13.522 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/April/Saturday_April_3_1999_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:13.671 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/April/Wednesday_April_14_1999_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:13.753 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/April/Tuesday_April_6_1999_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:13.852 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/October/Friday_October_22_1999_8_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:13.944 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/October/Wednesday_October_20_1999_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:14.127 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/December/Friday_December_31_1999_8_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:14.368 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/December/Saturday_December_25_1999_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:14.496 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/July/Sunday_July_18_1999_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:14.499 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/July/Tuesday_July_20_1999_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:14.581 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/July/Tuesday_July_13_1999_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:14.664 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/July/Monday_July_19_1999_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:14.807 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/July/Wednesday_July_14_1999_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:15.203 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/May/Thursday_May_6_1999_8_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:15.241 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/May/Saturday_May_29_1999_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:15.536 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/November/Wednesday_November_3_1999_8_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:15.800 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1999/September/Sunday_September_5_1999_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:16.066 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1998/December/Sunday_December_27_1998_10_00_AM_Babuji Maharaj.pdf: startxref not found
+2026-03-10 10:53:16.202 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/1998/March/Sunday_March_1_1998_10_30_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:17.921 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2002/December/Monday_December_2_2002_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:18.357 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2002/June/Monday_June_3_2002_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:20.108 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/October/Saturday_October_18_2003_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:20.365 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/December/Saturday_December_13_2003_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:20.704 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/July/Friday_July_18_2003_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:20.854 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/August/Monday_August_4_2003_10_00_AM_Babuji Maharaj.pdf: 'NoneType' object has no attribute 'get_object'
+2026-03-10 10:53:21.046 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/May/Sunday_May_25_2003_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:21.271 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/November/Saturday_November_1_2003_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:21.288 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2003/November/Tuesday_November_25_2003_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:22.117 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/October/Monday_October_4_2004_10_00_AM_Babuji Maharaj.pdf: Stream has ended unexpectedly
+2026-03-10 10:53:22.183 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/December/Thursday_December_23_2004_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:22.260 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/December/Sunday_December_19_2004_10_00_AM_Babuji Maharaj.pdf: Cannot find Root object in pdf
+2026-03-10 10:53:22.577 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/June/Wednesday_June_30_2004_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:22.739 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/July/Sunday_July_25_2004_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:22.769 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/July/Thursday_July_29_2004_10_00_AM_Babuji Maharaj.pdf: list index out of range
+2026-03-10 10:53:22.862 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/August/Wednesday_August_11_2004_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:23.006 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/August/Monday_August_30_2004_10_00_AM_Babuji Maharaj.pdf: Cannot read an empty file
+2026-03-10 10:53:23.284 | ERROR    | __main__:ingest_data:89 - Failed to load ./All_Whispers_message/2004/November/Sunday_November_14_2004_10_00_AM_Babuji Maharaj.pdf: startxref not found
+2026-03-10 10:53:23.810 | INFO     | __main__:ingest_data:95 - Loaded 5518 document pages.
+2026-03-10 10:53:23.810 | INFO     | heart_speaks.repository:init_db:26 - Initializing message repository at /Users/vaibhavdikshit/dev/Heart_speaks/All_Whispers_message/messages.db
+2026-03-10 10:53:23.954 | INFO     | __main__:ingest_data:119 - Upserting full messages into SQLite repository...
+2026-03-10 10:53:24.391 | INFO     | __main__:ingest_data:153 - Splitting documents into chunks...
+2026-03-10 10:53:24.507 | INFO     | __main__:ingest_data:155 - Created 9848 chunks.
+2026-03-10 10:53:24.698 | INFO     | __main__:ingest_data:159 - Adding chunks to ChromaDB...
+2026-03-10 10:53:26.445 | INFO     | __main__:ingest_data:169 - Added batch 1 of 99
+2026-03-10 10:53:27.779 | INFO     | __main__:ingest_data:169 - Added batch 2 of 99
+2026-03-10 10:53:29.017 | INFO     | __main__:ingest_data:169 - Added batch 3 of 99
+2026-03-10 10:53:30.082 | INFO     | __main__:ingest_data:169 - Added batch 4 of 99
+2026-03-10 10:53:31.428 | INFO     | __main__:ingest_data:169 - Added batch 5 of 99
+2026-03-10 10:53:32.699 | INFO     | __main__:ingest_data:169 - Added batch 6 of 99
+2026-03-10 10:53:33.799 | INFO     | __main__:ingest_data:169 - Added batch 7 of 99
+2026-03-10 10:53:35.262 | INFO     | __main__:ingest_data:169 - Added batch 8 of 99
+2026-03-10 10:53:36.563 | INFO     | __main__:ingest_data:169 - Added batch 9 of 99
+2026-03-10 10:53:37.689 | INFO     | __main__:ingest_data:169 - Added batch 10 of 99
+2026-03-10 10:53:38.744 | INFO     | __main__:ingest_data:169 - Added batch 11 of 99
+2026-03-10 10:53:39.903 | INFO     | __main__:ingest_data:169 - Added batch 12 of 99
+2026-03-10 10:53:41.041 | INFO     | __main__:ingest_data:169 - Added batch 13 of 99
+2026-03-10 10:53:42.318 | INFO     | __main__:ingest_data:169 - Added batch 14 of 99
+2026-03-10 10:53:43.475 | INFO     | __main__:ingest_data:169 - Added batch 15 of 99
+2026-03-10 10:53:44.610 | INFO     | __main__:ingest_data:169 - Added batch 16 of 99
+2026-03-10 10:53:45.799 | INFO     | __main__:ingest_data:169 - Added batch 17 of 99
+2026-03-10 10:53:47.184 | INFO     | __main__:ingest_data:169 - Added batch 18 of 99
+2026-03-10 10:53:48.109 | INFO     | __main__:ingest_data:169 - Added batch 19 of 99
+2026-03-10 10:53:49.693 | INFO     | __main__:ingest_data:169 - Added batch 20 of 99
+2026-03-10 10:53:50.992 | INFO     | __main__:ingest_data:169 - Added batch 21 of 99
+2026-03-10 10:53:52.806 | INFO     | __main__:ingest_data:169 - Added batch 22 of 99
+2026-03-10 10:53:53.788 | INFO     | __main__:ingest_data:169 - Added batch 23 of 99
+2026-03-10 10:53:54.870 | INFO     | __main__:ingest_data:169 - Added batch 24 of 99
+2026-03-10 10:53:55.924 | INFO     | __main__:ingest_data:169 - Added batch 25 of 99
+2026-03-10 10:53:57.444 | INFO     | __main__:ingest_data:169 - Added batch 26 of 99
+2026-03-10 10:53:58.669 | INFO     | __main__:ingest_data:169 - Added batch 27 of 99
+2026-03-10 10:53:59.685 | INFO     | __main__:ingest_data:169 - Added batch 28 of 99
+2026-03-10 10:54:00.736 | INFO     | __main__:ingest_data:169 - Added batch 29 of 99
+2026-03-10 10:54:02.081 | INFO     | __main__:ingest_data:169 - Added batch 30 of 99
+2026-03-10 10:54:03.125 | INFO     | __main__:ingest_data:169 - Added batch 31 of 99
+2026-03-10 10:54:04.340 | INFO     | __main__:ingest_data:169 - Added batch 32 of 99
+2026-03-10 10:54:05.682 | INFO     | __main__:ingest_data:169 - Added batch 33 of 99
+2026-03-10 10:54:06.787 | INFO     | __main__:ingest_data:169 - Added batch 34 of 99
+2026-03-10 10:54:07.915 | INFO     | __main__:ingest_data:169 - Added batch 35 of 99
+2026-03-10 10:54:09.257 | INFO     | __main__:ingest_data:169 - Added batch 36 of 99
+2026-03-10 10:54:10.405 | INFO     | __main__:ingest_data:169 - Added batch 37 of 99
+2026-03-10 10:54:11.491 | INFO     | __main__:ingest_data:169 - Added batch 38 of 99
+2026-03-10 10:54:12.813 | INFO     | __main__:ingest_data:169 - Added batch 39 of 99
+2026-03-10 10:54:13.910 | INFO     | __main__:ingest_data:169 - Added batch 40 of 99
+2026-03-10 10:54:14.830 | INFO     | __main__:ingest_data:169 - Added batch 41 of 99
+2026-03-10 10:54:15.942 | INFO     | __main__:ingest_data:169 - Added batch 42 of 99
+2026-03-10 10:54:17.014 | INFO     | __main__:ingest_data:169 - Added batch 43 of 99
+2026-03-10 10:54:18.029 | INFO     | __main__:ingest_data:169 - Added batch 44 of 99
+2026-03-10 10:54:19.042 | INFO     | __main__:ingest_data:169 - Added batch 45 of 99
+2026-03-10 10:54:20.889 | INFO     | __main__:ingest_data:169 - Added batch 46 of 99
+2026-03-10 10:54:22.199 | INFO     | __main__:ingest_data:169 - Added batch 47 of 99
+2026-03-10 10:54:23.505 | INFO     | __main__:ingest_data:169 - Added batch 48 of 99
+2026-03-10 10:54:24.582 | INFO     | __main__:ingest_data:169 - Added batch 49 of 99
+2026-03-10 10:54:25.636 | INFO     | __main__:ingest_data:169 - Added batch 50 of 99
+2026-03-10 10:54:26.751 | INFO     | __main__:ingest_data:169 - Added batch 51 of 99
+2026-03-10 10:54:27.950 | INFO     | __main__:ingest_data:169 - Added batch 52 of 99
+2026-03-10 10:54:29.107 | INFO     | __main__:ingest_data:169 - Added batch 53 of 99
+2026-03-10 10:54:30.229 | INFO     | __main__:ingest_data:169 - Added batch 54 of 99
+2026-03-10 10:54:31.887 | INFO     | __main__:ingest_data:169 - Added batch 55 of 99
+2026-03-10 10:54:32.977 | INFO     | __main__:ingest_data:169 - Added batch 56 of 99
+2026-03-10 10:54:34.041 | INFO     | __main__:ingest_data:169 - Added batch 57 of 99
+2026-03-10 10:54:35.265 | INFO     | __main__:ingest_data:169 - Added batch 58 of 99
+2026-03-10 10:54:36.296 | INFO     | __main__:ingest_data:169 - Added batch 59 of 99
+2026-03-10 10:54:37.352 | INFO     | __main__:ingest_data:169 - Added batch 60 of 99
+2026-03-10 10:54:38.254 | INFO     | __main__:ingest_data:169 - Added batch 61 of 99
+2026-03-10 10:54:39.363 | INFO     | __main__:ingest_data:169 - Added batch 62 of 99
+2026-03-10 10:54:40.404 | INFO     | __main__:ingest_data:169 - Added batch 63 of 99
+2026-03-10 10:54:41.525 | INFO     | __main__:ingest_data:169 - Added batch 64 of 99
+2026-03-10 10:54:42.593 | INFO     | __main__:ingest_data:169 - Added batch 65 of 99
+2026-03-10 10:54:43.938 | INFO     | __main__:ingest_data:169 - Added batch 66 of 99
+2026-03-10 10:54:45.042 | INFO     | __main__:ingest_data:169 - Added batch 67 of 99
+2026-03-10 10:54:46.797 | INFO     | __main__:ingest_data:169 - Added batch 68 of 99
+2026-03-10 10:54:48.832 | INFO     | __main__:ingest_data:169 - Added batch 69 of 99
+2026-03-10 10:54:50.067 | INFO     | __main__:ingest_data:169 - Added batch 70 of 99
+2026-03-10 10:54:51.203 | INFO     | __main__:ingest_data:169 - Added batch 71 of 99
+2026-03-10 10:54:52.305 | INFO     | __main__:ingest_data:169 - Added batch 72 of 99
+2026-03-10 10:54:53.491 | INFO     | __main__:ingest_data:169 - Added batch 73 of 99
+2026-03-10 10:54:54.590 | INFO     | __main__:ingest_data:169 - Added batch 74 of 99
+2026-03-10 10:54:55.841 | INFO     | __main__:ingest_data:169 - Added batch 75 of 99
+2026-03-10 10:54:57.120 | INFO     | __main__:ingest_data:169 - Added batch 76 of 99
+2026-03-10 10:54:58.217 | INFO     | __main__:ingest_data:169 - Added batch 77 of 99
+2026-03-10 10:54:59.480 | INFO     | __main__:ingest_data:169 - Added batch 78 of 99
+2026-03-10 10:55:00.732 | INFO     | __main__:ingest_data:169 - Added batch 79 of 99
+2026-03-10 10:55:01.908 | INFO     | __main__:ingest_data:169 - Added batch 80 of 99
+2026-03-10 10:55:03.252 | INFO     | __main__:ingest_data:169 - Added batch 81 of 99
+2026-03-10 10:55:04.461 | INFO     | __main__:ingest_data:169 - Added batch 82 of 99
+2026-03-10 10:55:05.507 | INFO     | __main__:ingest_data:169 - Added batch 83 of 99
+2026-03-10 10:55:06.784 | INFO     | __main__:ingest_data:169 - Added batch 84 of 99
+2026-03-10 10:55:07.899 | INFO     | __main__:ingest_data:169 - Added batch 85 of 99
+2026-03-10 10:55:08.870 | INFO     | __main__:ingest_data:169 - Added batch 86 of 99
+2026-03-10 10:55:10.027 | INFO     | __main__:ingest_data:169 - Added batch 87 of 99
+2026-03-10 10:55:11.585 | INFO     | __main__:ingest_data:169 - Added batch 88 of 99
+2026-03-10 10:55:15.124 | INFO     | __main__:ingest_data:169 - Added batch 89 of 99
+2026-03-10 10:55:16.864 | INFO     | __main__:ingest_data:169 - Added batch 90 of 99
+2026-03-10 10:55:18.257 | INFO     | __main__:ingest_data:169 - Added batch 91 of 99
+2026-03-10 10:55:19.994 | INFO     | __main__:ingest_data:169 - Added batch 92 of 99
+2026-03-10 10:55:21.407 | INFO     | __main__:ingest_data:169 - Added batch 93 of 99
+2026-03-10 10:55:22.544 | INFO     | __main__:ingest_data:169 - Added batch 94 of 99
+2026-03-10 10:55:23.957 | INFO     | __main__:ingest_data:169 - Added batch 95 of 99
+2026-03-10 10:55:26.082 | INFO     | __main__:ingest_data:169 - Added batch 96 of 99
+2026-03-10 10:55:27.303 | INFO     | __main__:ingest_data:169 - Added batch 97 of 99
+2026-03-10 10:55:28.651 | INFO     | __main__:ingest_data:169 - Added batch 98 of 99
+2026-03-10 10:55:29.330 | INFO     | __main__:ingest_data:169 - Added batch 99 of 99
+2026-03-10 10:55:29.330 | INFO     | __main__:ingest_data:171 - Ingestion complete.

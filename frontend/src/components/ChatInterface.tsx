@@ -66,7 +66,7 @@ const SourceCard = ({ source }: { source: Source }) => {
 
             {!isExpanded && (
                 <div className="px-2.5 pb-2.5 text-xs italic font-serif text-ink/70 line-clamp-2 leading-relaxed">
-                    "{source.preview}..."
+                    &quot;{source.preview}...&quot;
                 </div>
             )}
         </div>
@@ -336,10 +336,20 @@ export function ChatInterface() {
                 </div>
                 <div className="block text-center md:absolute md:top-8 md:right-12">
                     <p className="font-heading italic text-xl text-ink/70">{currentDate}</p>
-                    <Link href="/dashboard" className="flex flex-col sm:flex-row items-center gap-2 mt-4 justify-center md:justify-end text-gold-accent hover:text-ink transition-colors font-heading italic text-sm border border-gold-accent/30 bg-gold-accent/5 px-4 py-2 rounded-full">
-                        <BarChart3 size={16} />
-                        <span>Explore Archives & Stats</span>
-                    </Link>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 justify-center md:justify-end">
+                        <Link href="/dashboard" className="flex items-center gap-1.5 text-gold-accent hover:text-ink transition-colors font-heading italic text-sm border border-gold-accent/30 bg-gold-accent/5 px-3 py-1.5 rounded-full">
+                            <BarChart3 size={14} />
+                            <span>Stats</span>
+                        </Link>
+                        <Link href="/reader" className="flex items-center gap-1.5 text-gold-accent hover:text-ink transition-colors font-heading italic text-sm border border-gold-accent/30 bg-gold-accent/5 px-3 py-1.5 rounded-full">
+                            <BookOpen size={14} />
+                            <span>Reader</span>
+                        </Link>
+                        <Link href="/bookmarks" className="flex items-center gap-1.5 text-gold-accent hover:text-ink transition-colors font-heading italic text-sm border border-gold-accent/30 bg-gold-accent/5 px-3 py-1.5 rounded-full">
+                            <BookOpen size={14} />
+                            <span>Bookmarks</span>
+                        </Link>
+                    </div>
                 </div>
             </header>
 
@@ -464,7 +474,7 @@ export function ChatInterface() {
                         </button>
                     </form>
                     <p className="text-center text-xs font-heading italic text-ink/40 mt-3">
-                        Everything has a raison d'être
+                        Everything has a raison d&apos;être
                     </p>
                 </div>
             </div>

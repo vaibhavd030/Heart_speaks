@@ -120,10 +120,26 @@ def ingest_data(data_path: str = settings.data_dir) -> Chroma:
     for filename, data in docs_by_file.items():
         full_text_str = str(data["text"]).strip()
         
+        # Smart Author Extraction: Look at the last 500 characters for known author names
+        # OCR might be messy, so we use a regex search
+        author = str(data["author"])
+        if author == "Spiritual Guide" or author == "Unknown":
+            tail_text = full_text_str[-500:].lower()
+            if re.search(r'babuji\s*maharaj|babuji', tail_text):
+                author = "Babuji Maharaj"
+            elif re.search(r'chariji|parthasarathi\s*rajagopalachari', tail_text):
+                author = "Chariji"
+            elif re.search(r'daaji|kamlesh\s*patel', tail_text):
+                author = "Daaji"
+            elif re.search(r'lalaji|ram\s*chandra\s*of\s*fatehgarh', tail_text):
+                author = "Lalaji"
+            else:
+                author = "Spiritual Guide"
+        
         upsert_message(
             source_file=filename,
             full_text=full_text_str,
-            author=str(data["author"]),
+            author=author,
             date=str(data["date"]),
             page_count=int(data["pages"]) # type: ignore
         )

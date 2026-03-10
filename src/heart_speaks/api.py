@@ -52,6 +52,14 @@ class ChatResponse(BaseModel):
     answer: str
     sources: list[SourceModel]
 
+class ProgressRequest(BaseModel):
+    source_file: str
+    messages_read: int
+
+class BookmarkRequest(BaseModel):
+    source_file: str
+    notes: str
+
 @app.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest) -> ChatResponse:
     """
@@ -156,3 +164,43 @@ def get_message_list(query: str = "", page: int = 1, limit: int = 50) -> dict[st
     """Returns a paginated list of messages from the repository."""
     from heart_speaks.repository import search_messages
     return search_messages(query, page, limit)
+
+@app.get("/reader/messages")
+def get_reader_messages() -> list[dict[str, Any]]:
+    """Returns all messages ordered by date for the reader sequence."""
+    from heart_speaks.repository import get_reader_sequence
+    return get_reader_sequence()
+
+@app.get("/reader/progress")
+def get_reader_progress() -> dict[str, Any]:
+    """Returns the user's reading progress."""
+    from heart_speaks.repository import get_progress
+    progress = get_progress("default_user")
+    return progress or {"user_id": "default_user", "last_read_source_file": None, "messages_read": 0}
+
+@app.post("/reader/progress")
+def update_reader_progress(request: ProgressRequest) -> dict[str, str]:
+    """Updates the user's reading progress."""
+    from heart_speaks.repository import update_progress
+    update_progress("default_user", request.source_file, request.messages_read)
+    return {"status": "success"}
+
+@app.get("/reader/bookmarks")
+def get_reader_bookmarks() -> list[dict[str, Any]]:
+    """Returns all bookmarks ordered by message date."""
+    from heart_speaks.repository import get_bookmarks
+    return get_bookmarks()
+
+@app.post("/reader/bookmarks")
+def save_reader_bookmark(request: BookmarkRequest) -> dict[str, str]:
+    """Saves or updates a bookmark with notes."""
+    from heart_speaks.repository import upsert_bookmark
+    upsert_bookmark(request.source_file, request.notes)
+    return {"status": "success"}
+
+@app.delete("/reader/bookmarks/{source_file}")
+def remove_reader_bookmark(source_file: str) -> dict[str, str]:
+    """Removes a bookmark."""
+    from heart_speaks.repository import delete_bookmark
+    delete_bookmark(source_file)
+    return {"status": "success"}

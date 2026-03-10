@@ -38,6 +38,21 @@ def init_db() -> None:
                 topics TEXT
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_progress (
+                user_id TEXT PRIMARY KEY,
+                last_read_source_file TEXT,
+                messages_read INTEGER DEFAULT 0
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS bookmarks (
+                source_file TEXT PRIMARY KEY,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(source_file) REFERENCES messages(source_file)
+            )
+        ''')
         conn.commit()
 
 def clear_db() -> None:
@@ -170,3 +185,70 @@ def search_messages(query: str = "", page: int = 1, limit: int = 50) -> dict[str
         "limit": limit,
         "messages": [dict(row) for row in rows]
     }
+
+def get_reader_sequence() -> list[dict[str, Any]]:
+    """Returns a sequence of all messages ordered by date (oldest first)."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        # Order by date ASC. Note: 'Unknown' or missing dates will be handled by SQLite sorting.
+        cursor.execute('''
+            SELECT source_file, date, preview, page_count, author 
+            FROM messages 
+            ORDER BY date ASC, source_file ASC
+        ''')
+        return [dict(row) for row in cursor.fetchall()]
+
+def update_progress(user_id: str, source_file: str, messages_read: int) -> None:
+    """Updates the user's reading progress."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO user_progress (user_id, last_read_source_file, messages_read)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                last_read_source_file=excluded.last_read_source_file,
+                messages_read=excluded.messages_read
+        ''', (user_id, source_file, messages_read))
+        conn.commit()
+
+def get_progress(user_id: str) -> dict[str, Any] | None:
+    """Retrieves the user's reading progress."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM user_progress WHERE user_id = ?', (user_id,))
+        row = cursor.fetchone()
+        if row:
+            return dict(row)
+        return None
+
+def upsert_bookmark(source_file: str, notes: str) -> None:
+    """Saves or updates a bookmark and associated notes for a message."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO bookmarks (source_file, notes)
+            VALUES (?, ?)
+            ON CONFLICT(source_file) DO UPDATE SET
+                notes=excluded.notes,
+                created_at=CURRENT_TIMESTAMP
+        ''', (source_file, notes))
+        conn.commit()
+
+def delete_bookmark(source_file: str) -> None:
+    """Removes a bookmark."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM bookmarks WHERE source_file = ?', (source_file,))
+        conn.commit()
+
+def get_bookmarks() -> list[dict[str, Any]]:
+    """Retrieves all bookmarks with message context, ordered by message date."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT b.source_file, b.notes, b.created_at, m.date, m.preview, m.author, m.page_count
+            FROM bookmarks b
+            JOIN messages m ON b.source_file = m.source_file
+            ORDER BY m.date ASC, b.created_at DESC
+        ''')
+        return [dict(row) for row in cursor.fetchall()]

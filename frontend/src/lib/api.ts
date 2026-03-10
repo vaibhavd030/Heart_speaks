@@ -20,6 +20,7 @@ export const sendMessage = async (message: string) => {
 export const sendMessageStream = async (
     message: string,
     onContent: (text: string) => void,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSources: (sources: any[]) => void,
     onError: (error: string) => void
 ) => {
@@ -83,4 +84,35 @@ export const checkHealth = async () => {
         console.error('Health Check Error:', error);
         return { status: 'error' };
     }
+};
+
+// Reader Features
+export const getReaderSequence = async () => {
+    const response = await api.get('/reader/messages');
+    return response.data;
+};
+
+export const getReaderProgress = async () => {
+    const response = await api.get('/reader/progress');
+    return response.data;
+};
+
+export const updateReaderProgress = async (source_file: string, messages_read: number) => {
+    const response = await api.post('/reader/progress', { source_file, messages_read });
+    return response.data;
+};
+
+export const getBookmarks = async () => {
+    const response = await api.get('/reader/bookmarks');
+    return response.data;
+};
+
+export const saveBookmark = async (source_file: string, notes: string) => {
+    const response = await api.post('/reader/bookmarks', { source_file, notes });
+    return response.data;
+};
+
+export const removeBookmark = async (source_file: string) => {
+    const response = await api.delete(`/reader/bookmarks/${source_file}`);
+    return response.data;
 };
