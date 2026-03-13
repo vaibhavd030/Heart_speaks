@@ -15,6 +15,9 @@ import {
     Line,
 } from 'recharts';
 import Image from 'next/image';
+import { AuthGuard } from '@/components/AuthGuard';
+import { PendingApprovals } from '@/components/PendingApprovals';
+import { api } from '@/lib/api';
 
 interface Stats {
     total_messages: number;
@@ -49,30 +52,27 @@ export default function Dashboard() {
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
 
-    // Use the same base URL as the ChatInterface API client (localhost:8000 by default)
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
 
     useEffect(() => {
-        fetch(`${API_BASE_URL}/stats`)
-            .then((res) => res.json())
-            .then((data) => {
-                setStats(data);
+        api.get('/stats')
+            .then((res) => {
+                setStats(res.data);
                 setLoadingStats(false);
             })
             .catch((err) => {
                 console.error('Failed to fetch stats:', err);
                 setLoadingStats(false);
             });
-    }, [API_BASE_URL]);
+    }, []);
 
     useEffect(() => {
         const fetchMessages = async () => {
             setLoadingMessages(true);
             try {
                 const queryParam = searchQuery ? `&query=${encodeURIComponent(searchQuery)}` : '';
-                const res = await fetch(`${API_BASE_URL}/messages?page=${page}&limit=10${queryParam}`);
-                const data = await res.json();
-                setMessagesData(data);
+                const res = await api.get(`/messages?page=${page}&limit=10${queryParam}`);
+                setMessagesData(res.data);
             } catch (err) {
                 console.error('Failed to fetch messages:', err);
             } finally {
@@ -86,7 +86,7 @@ export default function Dashboard() {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [searchQuery, page, API_BASE_URL]);
+    }, [searchQuery, page]);
 
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const formattedMonthData = stats?.by_month.map(item => ({
@@ -95,6 +95,7 @@ export default function Dashboard() {
     })) || [];
 
     return (
+        <AuthGuard>
         <div className="min-h-screen bg-paper text-ink font-body relative overflow-x-hidden pb-12">
             {/* Background Texture & Pattern */}
             <div className="fixed inset-0 bg-[url('/parchment-bg.svg')] opacity-60 pointer-events-none z-0 mix-blend-multiply"></div>
@@ -189,6 +190,13 @@ export default function Dashboard() {
                     )}
                 </section>
 
+                {/* Pending Approvals Section */}
+                {stats && (
+                    <section className="mt-12">
+                        <PendingApprovals />
+                    </section>
+                )}
+
                 {/* Repository Search Section */}
                 <section>
                     <div className="flex items-center justify-between mb-6">
@@ -245,7 +253,7 @@ export default function Dashboard() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <a
-                                                        href={`${API_BASE_URL}/data/${msg.source_file}`}
+                                                        href={`${api.defaults.baseURL}/data/${msg.source_file}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-gold-accent hover:text-white hover:bg-gold-accent border border-gold-accent/30 px-3 py-1 rounded transition-colors inline-block"
@@ -295,5 +303,6 @@ export default function Dashboard() {
                 </section>
             </main>
         </div>
+        </AuthGuard>
     );
 }

@@ -15,14 +15,8 @@ from loguru import logger
 
 from heart_speaks.config import settings
 
-DB_PATH = os.path.join(
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), "..", "..", settings.data_dir.replace("./", "")
-        )
-    ),
-    "messages.db",
-)
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+DB_PATH = os.path.join(BASE_DIR, settings.data_dir.replace("./", ""), "messages.db")
 
 
 def get_db_connection() -> sqlite3.Connection:
@@ -59,9 +53,12 @@ def init_db() -> None:
         """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS bookmarks (
-                source_file TEXT PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                source_file TEXT NOT NULL,
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, source_file),
                 FOREIGN KEY(source_file) REFERENCES messages(source_file)
             )
         """)
@@ -235,16 +232,35 @@ def search_messages(query: str = "", page: int = 1, limit: int = 50) -> dict[str
 
 
 def get_reader_sequence() -> list[dict[str, Any]]:
-    """Returns a sequence of all messages ordered by date (oldest first)."""
+    """Returns a filtered sequence of all messages where the PDF file actually exists on disk."""
+    
+    # Deriving the data directory directly from the established DB_PATH
+    base_data_dir = os.path.dirname(DB_PATH)
+    
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        # Order by date ASC. Note: 'Unknown' or missing dates will be handled by SQLite sorting.
         cursor.execute("""
             SELECT source_file, date, preview, page_count, author 
             FROM messages 
             ORDER BY date ASC, source_file ASC
         """)
-        return [dict(row) for row in cursor.fetchall()]
+        all_messages = [dict(row) for row in cursor.fetchall()]
+
+    # Filter by actual file existence to avoid 404s in the reader
+    filtered_messages = []
+    skipped_count = 0
+    for msg in all_messages:
+        full_path = os.path.join(base_data_dir, msg["source_file"])
+        if os.path.exists(full_path):
+            filtered_messages.append(msg)
+        else:
+            skipped_count += 1
+            
+    # Simple console logs for Cloud Run verification
+    print(f"READER SEQUENCE: Base directory: {base_data_dir}")
+    print(f"READER SEQUENCE: Total in DB: {len(all_messages)}, Found on disk: {len(filtered_messages)}, Skipped: {skipped_count}")
+    
+    return filtered_messages
 
 
 def update_progress(user_id: str, source_file: str, messages_read: int) -> None:
@@ -275,39 +291,40 @@ def get_progress(user_id: str) -> dict[str, Any] | None:
         return None
 
 
-def upsert_bookmark(source_file: str, notes: str) -> None:
+def upsert_bookmark(user_id: str, source_file: str, notes: str) -> None:
     """Saves or updates a bookmark and associated notes for a message."""
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO bookmarks (source_file, notes)
-            VALUES (?, ?)
-            ON CONFLICT(source_file) DO UPDATE SET
+            INSERT INTO bookmarks (user_id, source_file, notes)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id, source_file) DO UPDATE SET
                 notes=excluded.notes,
                 created_at=CURRENT_TIMESTAMP
         """,
-            (source_file, notes),
+            (user_id, source_file, notes),
         )
         conn.commit()
 
 
-def delete_bookmark(source_file: str) -> None:
+def delete_bookmark(user_id: str, source_file: str) -> None:
     """Removes a bookmark."""
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM bookmarks WHERE source_file = ?", (source_file,))
+        cursor.execute("DELETE FROM bookmarks WHERE user_id = ? AND source_file = ?", (user_id, source_file))
         conn.commit()
 
 
-def get_bookmarks() -> list[dict[str, Any]]:
-    """Retrieves all bookmarks with message context, ordered by message date."""
+def get_bookmarks(user_id: str) -> list[dict[str, Any]]:
+    """Retrieves all bookmarks with message context for a user, ordered by message date."""
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT b.source_file, b.notes, b.created_at, m.date, m.preview, m.author, m.page_count
             FROM bookmarks b
             JOIN messages m ON b.source_file = m.source_file
+            WHERE b.user_id = ?
             ORDER BY m.date ASC, b.created_at DESC
-        """)
+        """, (user_id,))
         return [dict(row) for row in cursor.fetchall()]

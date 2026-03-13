@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
-import { getReaderSequence, getReaderProgress, updateReaderProgress, saveBookmark, getBookmarks, removeBookmark } from '@/lib/api';
+import { getReaderSequence, getReaderProgress, updateReaderProgress, saveBookmark, getBookmarks, removeBookmark, api } from '@/lib/api';
 import { clsx } from 'clsx';
+import { AuthGuard } from '@/components/AuthGuard';
 
 interface ReaderMessage {
     source_file: string;
@@ -27,14 +28,14 @@ export default function ReaderPage() {
         const initReader = async () => {
             setIsLoading(true);
             try {
-                // Fetch full sequence and user progress in parallel
-                const [sequenceData, progressData, bookmarksData] = await Promise.all([
-                    getReaderSequence(),
-                    getReaderProgress(),
-                    getBookmarks()
-                ]);
-
+                const sequenceData = await getReaderSequence();
                 setMessages(sequenceData);
+
+                // Fetch progress and bookmarks separately to avoid blocking rendering
+                const [progressData, bookmarksData] = await Promise.all([
+                    getReaderProgress().catch(e => { console.error("Progress fetch failed:", e); return null; }),
+                    getBookmarks().catch(e => { console.error("Bookmarks fetch failed:", e); return []; })
+                ]);
 
                 // Find the starting index
                 let startIndex = 0;
@@ -45,15 +46,16 @@ export default function ReaderPage() {
                 setCurrentIndex(startIndex);
 
                 // Check if current is bookmarked
-                const currentSource = sequenceData[startIndex]?.source_file;
-                const existingBookmark = bookmarksData.find((b: { source_file: string; notes: string }) => b.source_file === currentSource);
-                if (existingBookmark) {
-                    setBookmarked(true);
-                    setNotes(existingBookmark.notes || '');
+                if (bookmarksData && sequenceData[startIndex]) {
+                    const currentSource = sequenceData[startIndex].source_file;
+                    const existingBookmark = bookmarksData.find((b: { source_file: string; notes: string }) => b.source_file === currentSource);
+                    if (existingBookmark) {
+                        setBookmarked(true);
+                        setNotes(existingBookmark.notes || '');
+                    }
                 }
-
             } catch (error) {
-                console.error("Failed to initialize reader:", error);
+                console.error("Failed to fetch sequence data:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -152,6 +154,7 @@ export default function ReaderPage() {
     const currentMessage = messages[currentIndex];
 
     return (
+        <AuthGuard>
         <div className="flex h-screen bg-paper text-ink font-body relative overflow-hidden flex-col md:flex-row">
             {/* Background Texture & Pattern */}
             <div className="absolute inset-0 bg-[url('/parchment-bg.svg')] opacity-60 pointer-events-none z-0 mix-blend-multiply"></div>
@@ -177,7 +180,7 @@ export default function ReaderPage() {
                     )}
                     <iframe
                         key={currentMessage.source_file}
-                        src={`http://localhost:8000/data/${currentMessage.source_file}`}
+                        src={`${api.defaults.baseURL}/data/${currentMessage.source_file}`}
                         className="w-full h-full border-none shadow-inner"
                         onLoad={() => setPdfLoading(false)}
                         title="PDF Viewer"
@@ -265,6 +268,7 @@ export default function ReaderPage() {
                 </div>
             </div>
         </div>
+        </AuthGuard>
     );
 }
 

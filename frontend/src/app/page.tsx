@@ -1,9 +1,12 @@
 import { ChatInterface } from '@/components/ChatInterface';
+import { AuthGuard } from '@/components/AuthGuard';
 
 export default function Home() {
   return (
-    <main>
-      <ChatInterface />
-    </main>
+    <AuthGuard>
+      <main>
+        <ChatInterface />
+      </main>
+    </AuthGuard>
   );
 }

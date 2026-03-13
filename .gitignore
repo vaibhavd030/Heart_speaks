@@ -48,9 +48,10 @@ All_Whispers_message/
 old_chroma_db/
 old_data/
 logs/
-eBook
+eBook/
 instructions/
 messages.db
 scripts/
 tests/eval/
 tests/logs/
+deploy.md

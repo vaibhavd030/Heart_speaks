@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Pinyon_Script, Crimson_Text, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
@@ -29,9 +29,22 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#F5F1E6",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "SAGE - Spiritual Archive Guidance Engine",
   description: "Conversations with the Brighter World",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SAGE",
+  },
 };
 
 export default function RootLayout({

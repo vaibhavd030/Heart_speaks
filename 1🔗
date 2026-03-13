@@ -1,0 +1,10 @@
+Creating temporary archive of 14100 file(s) totalling 1.2 GiB before compression.
+Creating temporary archive of 14100 file(s) totalling 1.2 GiB before compression.
+Uploading tarball of [.] to [gs://my-tele-pa_cloudbuild/source/1773425179.101056-7413ee3070ad4370ac93d88284250987.tgz]
+Uploading tarball of [.] to [gs://my-tele-pa_cloudbuild/source/1773425179.101056-7413ee3070ad4370ac93d88284250987.tgz]
+Created [https://cloudbuild.googleapis.com/v1/projects/my-tele-pa/locations/global/builds/f986e02d-740d-4eb3-a410-1c557aa2c1d8].
+Created [https://cloudbuild.googleapis.com/v1/projects/my-tele-pa/locations/global/builds/f986e02d-740d-4eb3-a410-1c557aa2c1d8].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds/f986e02d-740d-4eb3-a410-1c557aa2c1d8?project=34833003999 ].
+Logs are available at [ https://console.cloud.google.com/cloud-build/builds/f986e02d-740d-4eb3-a410-1c557aa2c1d8?project=34833003999 ].
+Waiting for build to complete. Polling interval: 1 second(s).
+Waiting for build to complete. Polling interval: 1 second(s).

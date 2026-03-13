@@ -12,6 +12,8 @@ The primary knowledge base consists of the **"All Whispers Messages"** dataset, 
 ## 3. Architecture & Features
 - **Frontend**: A custom **Next.js** implementation boasting beautiful, spiritual aesthetics (Parchment backgrounds, Tailwind V4 CSS) and compact, expandable citation cards with PDF downloads and integrated Author extraction.
 - **Backend**: A headless **FastAPI** REST API serving chat generation and static PDF files (mounted via `data/`).
+- **Production Authentication**: Complete registration flow with **Admin Approval** via dashboard and Email notifications (Gmail SMTP).
+- **Reader Sequence Filtering**: Intelligent backend filtering that dynamically checks disk for PDF existence to ensure a contiguous reading experience without 404 errors.
 - **Orchestration**: Built using **LangGraph**. Features an integrated prompt-injection validation guardrail (via OpenAI's Moderation API) and seamless conversational history routing.
 - **Advanced Retrieval**:
   - **Hybrid Search**: Uses singletons for dense vector search (via ChromaDB) and sparse lexical search (BM25) to dramatically reduce latency.

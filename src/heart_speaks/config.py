@@ -57,6 +57,18 @@ class Settings(BaseSettings):
         default="gpt-4o", description="Model for response generation"
     )
 
+    # Auth
+    jwt_secret_key: str = Field(
+        default="change-this-in-production-use-a-64-char-random-string",
+        description="Secret key for JWT token signing",
+    )
+    gmail_app_password: str | None = Field(
+        default=None, description="Gmail App Password for sending notification emails"
+    )
+    admin_email: str = Field(
+        default="vaibhav030@gmail.com", description="Admin email for notifications"
+    )
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )

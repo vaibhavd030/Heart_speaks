@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Send, User, Bot, Loader2, BookOpen, Feather, FileDown, BarChart3 } from 'lucide-react';
-import { sendMessageStream } from '@/lib/api';
+import { Send, User, Bot, Loader2, BookOpen, Feather, FileDown, BarChart3, LogOut } from 'lucide-react';
+import { sendMessageStream, api } from '@/lib/api';
+import { clearAuth } from '@/lib/auth';
 import ReactMarkdown from 'react-markdown';
 import { clsx } from 'clsx';
 import Image from 'next/image';
@@ -43,7 +44,7 @@ const SourceCard = ({ source }: { source: Source }) => {
                 </div>
 
                 <a
-                    href={`http://localhost:8000/data/${source.citation}`}
+                    href={`${api.defaults.baseURL}/data/${source.citation}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 flex items-center gap-1 text-[10px] uppercase tracking-wider font-heading font-bold text-gold-accent hover:text-white hover:bg-gold-accent border border-gold-accent/30 bg-gold-accent/5 px-2 py-1 rounded transition-colors"
@@ -349,6 +350,10 @@ export function ChatInterface() {
                             <BookOpen size={14} />
                             <span>Bookmarks</span>
                         </Link>
+                        <button onClick={() => { clearAuth(); window.location.href = '/login'; }} className="flex items-center gap-1.5 text-gold-accent hover:text-red-500 transition-colors font-heading italic text-sm border border-gold-accent/30 bg-gold-accent/5 px-3 py-1.5 rounded-full">
+                            <LogOut size={14} />
+                            <span>Logout</span>
+                        </button>
                     </div>
                 </div>
             </header>
@@ -416,7 +421,7 @@ export function ChatInterface() {
                                 <div className="mt-2 w-full max-w-2xl mx-auto">
                                     <div className="flex items-center gap-2 mb-2 justify-center opacity-60">
                                         <div className="h-px w-12 bg-ink/30"></div>
-                                        <span className="font-script text-xl text-ink">Whispers from the Archive</span>
+                                        <span className="font-heading italic text-xl text-ink">Whispers from the Archive</span>
                                         <div className="h-px w-12 bg-ink/30"></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

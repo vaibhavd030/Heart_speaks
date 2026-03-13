@@ -1,0 +1,14 @@
+Deploying container to Cloud Run service [[1msage-backend[m] in project [[1mmy-tele-pa[m] region [[1meurope-west2[m]
+Deploying container to Cloud Run service [[1msage-backend[m] in project [[1mmy-tele-pa[m] region [[1meurope-west2[m]
+Deploying...
+Deploying...
+Creating Revision...........................................................................................................................................................................................................................................................................................................................................................................................done
+Creating Revision...........................................................................................................................................................................................................................................................................................................................................................................................done
+Routing traffic.....done
+Routing traffic.....done
+Done.
+Done.
+Service [[1msage-backend[m] revision [[1msage-backend-00003-9gc[m] has been deployed and is serving [1m100[m percent of traffic.
+Service URL: [1mhttps://sage-backend-34833003999.europe-west2.run.app[m
+Service [[1msage-backend[m] revision [[1msage-backend-00003-9gc[m] has been deployed and is serving [1m100[m percent of traffic.
+Service URL: [1mhttps://sage-backend-34833003999.europe-west2.run.app[m

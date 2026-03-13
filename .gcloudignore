@@ -1,0 +1,22 @@
+.git/
+.venv/
+frontend/
+node_modules/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# Exclude old data / unneeded folders
+old_data/
+old_chroma_db/
+# All_Whispers_message/
+!All_Whispers_message/**
+eBook/
+docs/
+tests/
+logs/
+
+# Explicitly ensure we upload the db and vectors
+!chroma_db/
+!messages.db

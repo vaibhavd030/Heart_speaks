@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Clock, FileText, Trash2 } from 'lucide-react';
 import { getBookmarks, removeBookmark } from '@/lib/api';
+import { AuthGuard } from '@/components/AuthGuard';
 
 interface BookmarkMsg {
     source_file: string;
@@ -45,6 +46,7 @@ export default function BookmarksPage() {
     };
 
     return (
+        <AuthGuard>
         <div className="min-h-screen bg-paper text-ink font-body relative overflow-y-auto pb-24">
             {/* Background Texture Line */}
             <div className="fixed inset-0 bg-[url('/parchment-bg.svg')] opacity-60 pointer-events-none z-0 mix-blend-multiply"></div>
@@ -146,5 +148,6 @@ export default function BookmarksPage() {
                 )}
             </main>
         </div>
+        </AuthGuard>
     );
 }
