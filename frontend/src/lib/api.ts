@@ -139,3 +139,23 @@ export const removeBookmark = async (source_file: string) => {
     const response = await api.delete(`/reader/bookmarks/${source_file}`);
     return response.data;
 };
+// Admin Features
+export const getAllUsers = async () => {
+    const response = await api.get('/admin/users/all');
+    return response.data;
+};
+
+export const getPendingUsers = async () => {
+    const response = await api.get('/admin/users/pending');
+    return response.data;
+};
+
+export const approveUser = async (email: string, action: 'approve' | 'reject') => {
+    const response = await api.post('/admin/users/approve', { email, action });
+    return response.data;
+};
+
+export const getAllChatLogs = async (limit: number = 100, offset: number = 0) => {
+    const response = await api.get('/admin/logs', { params: { limit, offset } });
+    return response.data;
+};

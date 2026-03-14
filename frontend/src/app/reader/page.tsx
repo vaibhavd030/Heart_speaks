@@ -41,17 +41,23 @@ export default function ReaderPage() {
                 let startIndex = 0;
                 if (progressData?.last_read_source_file) {
                     const idx = sequenceData.findIndex((m: ReaderMessage) => m.source_file === progressData.last_read_source_file);
-                    if (idx !== -1) startIndex = idx;
+                    if (idx !== -1) {
+                        startIndex = idx;
+                        console.log(`Restoring progress to index ${idx} (${progressData.last_read_source_file})`);
+                    }
                 }
                 setCurrentIndex(startIndex);
 
-                // Check if current is bookmarked
-                if (bookmarksData && sequenceData[startIndex]) {
+                // Fetch bookmark state for initial message
+                if (sequenceData[startIndex]) {
                     const currentSource = sequenceData[startIndex].source_file;
                     const existingBookmark = bookmarksData.find((b: { source_file: string; notes: string }) => b.source_file === currentSource);
                     if (existingBookmark) {
                         setBookmarked(true);
                         setNotes(existingBookmark.notes || '');
+                    } else {
+                        setBookmarked(false);
+                        setNotes('');
                     }
                 }
             } catch (error) {
@@ -78,6 +84,16 @@ export default function ReaderPage() {
     const handleNavigate = async (newIndex: number) => {
         if (newIndex < 0 || newIndex >= messages.length) return;
 
+        // Auto-save current notes before navigating
+        if (messages[currentIndex] && notes.trim()) {
+            try {
+                await saveBookmark(messages[currentIndex].source_file, notes);
+                console.log("Auto-saved notes for previous message");
+            } catch (e) {
+                console.error("Auto-save failed:", e);
+            }
+        }
+
         setPdfLoading(true);
         setCurrentIndex(newIndex);
 
@@ -85,6 +101,10 @@ export default function ReaderPage() {
 
         // Update progress in background
         updateReaderProgress(nextMessage.source_file, newIndex + 1).catch(console.error);
+
+        // Clear local state before fetching new bookmark
+        setBookmarked(false);
+        setNotes('');
 
         // Fetch bookmark state for new message
         await fetchBookmarkState(nextMessage.source_file);
