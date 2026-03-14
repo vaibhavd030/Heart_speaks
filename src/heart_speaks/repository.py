@@ -62,6 +62,17 @@ def init_db() -> None:
                 FOREIGN KEY(source_file) REFERENCES messages(source_file)
             )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS chat_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                session_id TEXT NOT NULL,
+                question TEXT NOT NULL,
+                response TEXT NOT NULL,
+                metadata TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
         conn.commit()
 
 
@@ -327,4 +338,33 @@ def get_bookmarks(user_id: str) -> list[dict[str, Any]]:
             WHERE b.user_id = ?
             ORDER BY m.date ASC, b.created_at DESC
         """, (user_id,))
+        return [dict(row) for row in cursor.fetchall()]
+
+
+def save_chat_log(user_id: str, session_id: str, question: str, response: str, metadata: str | None = None) -> None:
+    """Persists a chat interaction to the database."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO chat_logs (user_id, session_id, question, response, metadata)
+            VALUES (?, ?, ?, ?, ?)
+        """,
+            (user_id, session_id, question, response, metadata),
+        )
+        conn.commit()
+
+
+def get_all_chat_logs(limit: int = 100, offset: int = 0) -> list[dict[str, Any]]:
+    """Retrieves chat logs with associated user metadata."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        # Joining with users table in messages.db
+        cursor.execute("""
+            SELECT l.*, u.first_name, u.last_name, u.email, u.abhyasi_id
+            FROM chat_logs l
+            JOIN users u ON l.user_id = u.user_id
+            ORDER BY l.created_at DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
         return [dict(row) for row in cursor.fetchall()]

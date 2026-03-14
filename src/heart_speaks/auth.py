@@ -283,6 +283,14 @@ def list_pending_users() -> list[dict[str, Any]]:
         ).fetchall()
     return [dict(row) for row in rows]
 
+def list_all_users() -> list[dict[str, Any]]:
+    """Returns all registered users with full metadata."""
+
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT user_id, first_name, last_name, email, abhyasi_id, status, is_admin, created_at FROM users ORDER BY created_at DESC"
+        ).fetchall()
+    return [dict(row) for row in rows]
 
 # --- Email Notification ---
 def _send_admin_notification(req: RegisterRequest) -> None:

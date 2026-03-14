@@ -10,18 +10,16 @@ The primary knowledge base consists of the **"All Whispers Messages"** dataset, 
 - **Organization:** The raw repository is strictly chronologically partitioned (`/YYYY/Month/Message.pdf`) to enable deep Exploratory Data Analysis (EDA) on the frontend Dashboard.
 
 ## 3. Architecture & Features
-- **Frontend**: A custom **Next.js** implementation boasting beautiful, spiritual aesthetics (Parchment backgrounds, Tailwind V4 CSS) and compact, expandable citation cards with PDF downloads and integrated Author extraction.
+- **Frontend**: A custom **Next.js** implementation boasting beautiful, spiritual aesthetics (Parchment backgrounds, Tailwind V4 CSS).
 - **Backend**: A headless **FastAPI** REST API serving chat generation and static PDF files (mounted via `data/`).
 - **Production Authentication**: Complete registration flow with **Admin Approval** via dashboard and Email notifications (Gmail SMTP).
-- **Reader Sequence Filtering**: Intelligent backend filtering that dynamically checks disk for PDF existence to ensure a contiguous reading experience without 404 errors.
-- **Orchestration**: Built using **LangGraph**. Features an integrated prompt-injection validation guardrail (via OpenAI's Moderation API) and seamless conversational history routing.
+- **Reader Sequence Filtering**: Intelligent backend filtering that dynamically checks disk for PDF existence to ensure a contiguous reading experience.
+- **Orchestration**: Built using **LangGraph**. Features an integrated prompt-injection validation guardrail and seamless conversational history routing.
 - **Advanced Retrieval**:
   - **Hybrid Search**: Uses singletons for dense vector search (via ChromaDB) and sparse lexical search (BM25) to dramatically reduce latency.
-  - **Query Expansion**: Uses `MultiQueryRetriever` to generate multiple semantic perspectives of the user's question before retrieving.
+  - **Query Expansion**: Uses `MultiQueryRetriever` to generate multiple semantic perspectives.
   - **Reranking**: Uses `FlashRank` (cross-encoder) to re-order the retrieved chunks for maximum precision. 
-- **Embeddings/LLM**: `text-embedding-3-large` and `gpt-4o` from OpenAI.
-- **Message Repository**: Utilizes a standalone **SQLite** database (`messages.db`) to map semantic chunks back to their full-text original source, ensuring citations expand to provide maximum context including date and parsed author signature.
-- **Evaluation**: Enforces strict **Ragas** metric thresholds over a golden dataset.
+- **Message Repository**: Utilizes a standalone **SQLite** database (`messages.db`) to map semantic chunks back to their full-text original source.
 
 ## 4. Architecture Diagram
 
@@ -121,35 +119,43 @@ You can easily spin up the entire architecture (FastAPI Backend + Next.js Fronte
 docker-compose up --build -d
 ```
 
-## 8. Walkthrough & Sample Usage
+## 8. User Registration & Features
 
-Once the application is running (via `make start` or Docker), you can interact with Heart Speaks through the intuitive React interface.
+### Registration & Access Workflow
+SAGE implements a secure, admin-gated registration process to ensure the integrity of the spiritual archives.
 
-### The Chat Interface (`http://localhost:3000`)
-1. **Asking Questions:** Type your spiritual inquiry into the chat box. Try questions like:
-   - *"How can I find peace when my mind is restless?"*
-   - *"What is prayer and how it helps in our progress?"*
-   - *"I feel disconnected from my heart today. Do you have any guidance?"*
-2. **Reading the Response:** The system will stream a response written in a warm, contemplative, "spiritual guide" persona.
+1.  **Registration**: New seekers register via the **Login** page by providing their Name, Email, and **Abhyasi ID**.
+2.  **Admin Review**: A notification is automatically dispatched to the administrator (`vaibhav030@gmail.com`).
+3.  **Approval**: The administrator reviews pending requests in the **Archive Dashboard**. Once approved, the seeker's status is updated.
+4.  **Login**: Seekers log in using their **Email** as the username and **Abhyasi ID** as the initial password.
 
-![Asking about Prayer](docs/images/prayer_response.png)
+---
 
-3. **Exploring Citations:** Below the response, you will see citation cards explicitly naming the Author (e.g., *Babuji Maharaj*) and the Date. Click any card to expand it and read the full contextual paragraph the LLM used for its answer.
+### Core Applications
 
-![Expanding a Citation](docs/images/prayer_expanded.png)
-4. **Original Source Documents:** Click the **"PDF"** button on any citation card to open the exact, original PDF document in a new browser tab for deep reading.
-5. **Session Memory:** The chatbot remembers your conversation. You can ask follow-up questions like *"Tell me more about what he meant by that."*
-6. **PDF Download:** Click the download icon in the top right of the assistant's response bubble to export the conversation as a beautifully formatted PDF.
+#### 1. SAGE Chat Interface
+The heart of the application. Engage in deep, contextual conversations with the spiritual archive.
+- **Hybrid Retrieval**: Combines semantic vector search with keyword-based BM25 search for precise citations.
+- **Citation Cards**: Every response includes expandable citations. Click a citation to view the exact excerpt or download the original PDF.
 
-### The EDA Dashboard (`http://localhost:3000/dashboard`)
-Click the **"Explore Archives & Stats"** button in the top right of the Chat Interface to access the Exploratory Data Analysis (EDA) dashboard.
+#### 2. Reader Mode (`/reader`)
+A dedicated space for focused study of the whispers.
+- **Sequential Navigation**: Read through the archives chronologically using the "Next" and "Prev" buttons.
+- **Dynamic Filtering**: The system automatically skips messages with missing source files, ensuring a seamless experience.
+- **Persistence**: Your progress is saved automatically. Return to exactly where you left off in your next session.
+- **Reflections**: Jot down personal notes and bookmarks. These are saved to your profile for future review.
 
-![Messages by Year](docs/images/dashboard_stats.png)
+#### 3. Saved Reflections (`/bookmarks`)
+Your personal library of meaningful whispers.
+- **Chronological Review**: All bookmarked messages are listed in the order they were originally delivered.
+- **Personal Log**: View and manage the notes you've taken during study.
+- **Direct Access**: Jump back into the PDF or remove reflections as your journey evolves.
 
-1. **Statistical Overview:** View top-level KPIs, including the total number of unique messages (currently 4,681) and the total pages scanned.
-2. **Temporal Analysis:** Interact with the Recharts-powered graphs to see the distribution of messages over exact years (e.g., 1991 - 2017) and the seasonal distribution across months.
-3. **Repository Search:** Scroll down to the Data Table to perform direct, full-text semantic searches across the entire `messages.db` SQLite repository. The **Repository Search** interface enables researchers to quickly locate specific phrases or concepts from any author, across the entire decade-spanning dataset.
-4. **Direct Access:** Use the search bar to find specific keywords across all documents, and use the inline PDF links to download or view the original source files directly.
+#### 4. Archive Dashboard (`/dashboard`)
+A powerful tool for exploratory data analysis and administrative management.
+- **Statistical Insights**: Visualize the temporal distribution of whispers across decades.
+- **Repository Search**: Perform full-text searches across the entire SQLite dataset to locate specific keywords or authors.
+- **Admin Management**: (For Admins) Approve or reject new user registrations to grant access to the system.
 
 ## 9. Testing, Linting & CI
 - **GitHub Actions**: Automated CI pipeline runs `ruff` linting, `black` formatting, `mypy` type-checking, and `pytest` on all PRs.

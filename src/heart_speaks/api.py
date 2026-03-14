@@ -38,10 +38,23 @@ from heart_speaks.auth import (
     approve_or_reject_user,
     get_current_user,
     init_users_table,
+    list_all_users,
     list_pending_users,
     login_user,
     register_user,
     require_admin,
+)
+from heart_speaks.repository import (
+    delete_bookmark,
+    get_all_chat_logs,
+    get_bookmarks,
+    get_progress,
+    get_reader_sequence,
+    get_stats,
+    save_chat_log,
+    search_messages,
+    update_progress,
+    upsert_bookmark,
 )
 
 @app.on_event("startup")
@@ -100,6 +113,14 @@ def get_pending_users(admin=Depends(require_admin)):
 def approve_user(req: ApproveRequest, admin=Depends(require_admin)):
     return approve_or_reject_user(req)
 
+@app.get("/admin/users/all")
+def get_all_registered_users(admin=Depends(require_admin)):
+    return list_all_users()
+
+@app.get("/admin/logs")
+def get_chat_history(limit: int = 100, offset: int = 0, admin=Depends(require_admin)):
+    return get_all_chat_logs(limit, offset)
+
 
 @app.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest, user=Depends(get_current_user)) -> ChatResponse:
@@ -126,6 +147,18 @@ def chat_endpoint(request: ChatRequest, user=Depends(get_current_user)) -> ChatR
 
     session_history.append(AIMessage(content=answer))
     sessions[session_key] = session_history
+
+    # Log interaction
+    try:
+        save_chat_log(
+            user_id=user["user_id"],
+            session_id=request.session_id,
+            question=request.message,
+            response=answer,
+            metadata=json.dumps({"sources_count": len(sources)})
+        )
+    except Exception as e:
+        print(f"Failed to save chat log: {e}")
 
     return ChatResponse(answer=answer, sources=sources)
 
@@ -175,6 +208,18 @@ async def chat_stream_endpoint(request: ChatRequest, user=Depends(get_current_us
         session_history.append(AIMessage(content=final_answer))
         sessions[session_key] = session_history
 
+        # Log interaction
+        try:
+            save_chat_log(
+                user_id=user["user_id"],
+                session_id=request.session_id,
+                question=request.message,
+                response=final_answer,
+                metadata=json.dumps({"streamed": True, "sources_count": len(final_sources)})
+            )
+        except Exception as e:
+            print(f"Failed to save streamed chat log: {e}")
+
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
@@ -185,25 +230,21 @@ def health_check() -> dict[str, str]:
 
 @app.get("/stats")
 def get_dashboard_stats(user=Depends(get_current_user)) -> dict[str, Any]:
-    from heart_speaks.repository import get_stats
     return get_stats()
 
 
 @app.get("/messages")
 def get_message_list(query: str = "", page: int = 1, limit: int = 50, user=Depends(get_current_user)) -> dict[str, Any]:
-    from heart_speaks.repository import search_messages
     return search_messages(query, page, limit)
 
 
 @app.get("/reader/messages")
 def get_reader_messages(user=Depends(get_current_user)) -> list[dict[str, Any]]:
-    from heart_speaks.repository import get_reader_sequence
     return get_reader_sequence()
 
 
 @app.get("/reader/progress")
 def get_reader_progress(user=Depends(get_current_user)) -> dict[str, Any]:
-    from heart_speaks.repository import get_progress
     progress = get_progress(user["user_id"])
     return progress or {
         "user_id": user["user_id"],
@@ -214,26 +255,22 @@ def get_reader_progress(user=Depends(get_current_user)) -> dict[str, Any]:
 
 @app.post("/reader/progress")
 def update_reader_progress(request: ProgressRequest, user=Depends(get_current_user)) -> dict[str, str]:
-    from heart_speaks.repository import update_progress
     update_progress(user["user_id"], request.source_file, request.messages_read)
     return {"status": "success"}
 
 
 @app.get("/reader/bookmarks")
 def get_reader_bookmarks(user=Depends(get_current_user)) -> list[dict[str, Any]]:
-    from heart_speaks.repository import get_bookmarks
     return get_bookmarks(user["user_id"])
 
 
 @app.post("/reader/bookmarks")
 def save_reader_bookmark(request: BookmarkRequest, user=Depends(get_current_user)) -> dict[str, str]:
-    from heart_speaks.repository import upsert_bookmark
     upsert_bookmark(user["user_id"], request.source_file, request.notes)
     return {"status": "success"}
 
 
 @app.delete("/reader/bookmarks/{source_file}")
 def remove_reader_bookmark(source_file: str, user=Depends(get_current_user)) -> dict[str, str]:
-    from heart_speaks.repository import delete_bookmark
     delete_bookmark(user["user_id"], source_file)
     return {"status": "success"}

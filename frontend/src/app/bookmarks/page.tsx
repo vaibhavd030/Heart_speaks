@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Clock, FileText, Trash2 } from 'lucide-react';
-import { getBookmarks, removeBookmark } from '@/lib/api';
+import { getBookmarks, removeBookmark, api } from '@/lib/api';
 import { AuthGuard } from '@/components/AuthGuard';
 
 interface BookmarkMsg {
@@ -103,7 +103,7 @@ export default function BookmarksPage() {
 
                                         <div className="mt-6 flex flex-col gap-2">
                                             <a
-                                                href={`http://localhost:8000/data/${bookmark.source_file}`}
+                                                href={`${api.defaults.baseURL}/data/${bookmark.source_file}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex items-center justify-center gap-2 w-full py-2 bg-gold-accent/10 hover:bg-gold-accent text-gold-accent hover:text-white rounded-lg transition-colors font-heading text-xs uppercase tracking-wider font-semibold"
