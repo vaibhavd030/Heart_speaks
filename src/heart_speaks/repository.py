@@ -62,6 +62,32 @@ def init_db() -> None:
                 FOREIGN KEY(source_file) REFERENCES messages(source_file)
             )
         """)
+        
+        # Check if user_id column exists (robust migration)
+        cursor.execute("PRAGMA table_info(bookmarks)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if "user_id" not in columns:
+            logger.warning("Migrating bookmarks table to add user_id column (nuclear)")
+            # Standard ALTER TABLE might fail if constraints are complex
+            # SQLite doesn't support DROP COLUMN or changing PKs easily, 
+            # so we reconstruct if needed
+            cursor.execute("ALTER TABLE bookmarks RENAME TO bookmarks_old")
+            cursor.execute("""
+                CREATE TABLE bookmarks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    source_file TEXT NOT NULL,
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(user_id, source_file),
+                    FOREIGN KEY(source_file) REFERENCES messages(source_file)
+                )
+            """)
+            cursor.execute("""
+                INSERT INTO bookmarks (user_id, source_file, notes, created_at)
+                SELECT 'legacy_user', source_file, notes, created_at FROM bookmarks_old
+            """)
+            cursor.execute("DROP TABLE bookmarks_old")
         conn.commit()
 
 

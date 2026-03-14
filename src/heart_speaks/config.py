@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         default=200, description="Chunk overlap for document splitting"
     )
     top_k: int = Field(default=25, description="Initial retrieval top K documents")
-    rerank_top_k: int = Field(default=8, description="Post-reranking top K documents")
+    rerank_top_k: int = Field(default=10, description="Post-reranking top K documents")
     generation_model: str = Field(
         default="gpt-4o", description="Model for response generation"
     )

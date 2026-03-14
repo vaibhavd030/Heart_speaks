@@ -20,6 +20,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://sage-frontend-34833003999.europe-west2.run.app",
+        "https://sage-frontend-qxhmc5knkq-nw.a.run.app",
         "http://localhost:3000",
     ],
     allow_credentials=True,
@@ -44,9 +45,12 @@ from heart_speaks.auth import (
     require_admin,
 )
 
+from heart_speaks.repository import init_db
+
 @app.on_event("startup")
 def startup_event():
     init_users_table()
+    init_db()
 
 # Mount real storage location for PDFs
 data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", settings.data_dir.replace("./", "")))
