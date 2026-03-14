@@ -34,3 +34,18 @@ export function clearAuth(): void {
 export function isLoggedIn(): boolean {
     return !!getToken();
 }
+
+/**
+ * Reads is_admin directly from the JWT payload (base64url decoded).
+ * More reliable than reading from the sage_user cookie in production Next.js builds.
+ */
+export function getIsAdmin(): boolean {
+    const token = getToken();
+    if (!token) return false;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        return !!payload.is_admin;
+    } catch {
+        return false;
+    }
+}

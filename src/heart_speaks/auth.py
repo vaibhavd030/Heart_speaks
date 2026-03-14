@@ -111,7 +111,7 @@ def init_users_table() -> None:
                 (
                     str(uuid.uuid4()),
                     "Vaibhav",
-                    "Dhanani",
+                    "Dikshit",
                     "vaibhav030@gmail.com",
                     "admin",
                     pwd_context.hash("admin"),
@@ -119,9 +119,9 @@ def init_users_table() -> None:
             )
             logger.info("Admin user created: vaibhav030@gmail.com")
         else:
-            # Always enforce admin privileges even if account was previously a regular user
+            # Always enforce admin privileges and correct name even if account was previously a regular user
             conn.execute(
-                "UPDATE users SET is_admin = 1, status = 'approved' WHERE email = ?",
+                "UPDATE users SET is_admin = 1, status = 'approved', first_name = 'Vaibhav', last_name = 'Dikshit' WHERE email = ?",
                 ("vaibhav030@gmail.com",),
             )
             logger.info("Admin privileges enforced for: vaibhav030@gmail.com")

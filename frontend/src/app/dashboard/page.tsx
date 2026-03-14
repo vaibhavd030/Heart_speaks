@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Search, BookOpen, BarChart3, Loader2, Users, MessageSquare, Shield } from 'lucide-react';
-import { getUser } from '@/lib/auth';
+import { getIsAdmin } from '@/lib/auth';
 import {
     BarChart,
     Bar,
@@ -49,15 +49,10 @@ export default function Dashboard() {
     const [messagesData, setMessagesData] = useState<MessagesResponse | null>(null);
     const [loadingStats, setLoadingStats] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdmin] = useState(() => getIsAdmin());
 
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
-
-    useEffect(() => {
-        const user = getUser();
-        setIsAdmin(!!user?.is_admin);
-    }, []);
 
 
 
