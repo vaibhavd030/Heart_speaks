@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Search, BookOpen, BarChart3, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, BookOpen, BarChart3, Loader2, Users, MessageSquare, Shield } from 'lucide-react';
+import { getUser } from '@/lib/auth';
 import {
     BarChart,
     Bar,
@@ -48,9 +49,15 @@ export default function Dashboard() {
     const [messagesData, setMessagesData] = useState<MessagesResponse | null>(null);
     const [loadingStats, setLoadingStats] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(1);
+
+    useEffect(() => {
+        const user = getUser();
+        setIsAdmin(!!user?.is_admin);
+    }, []);
 
 
 
@@ -194,6 +201,42 @@ export default function Dashboard() {
                 {stats && (
                     <section className="mt-12">
                         <PendingApprovals />
+                    </section>
+                )}
+
+                {/* Admin Sanctum — only for admins */}
+                {isAdmin && (
+                    <section>
+                        <div className="flex items-center gap-3 mb-6">
+                            <Shield className="text-gold-accent" />
+                            <h2 className="text-3xl font-serif italic">Admin Sanctum</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Link
+                                href="/admin/users"
+                                className="bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gold-accent/20 shadow-sm hover:shadow-md hover:border-gold-accent/50 transition-all group flex items-center gap-5"
+                            >
+                                <div className="w-14 h-14 rounded-full bg-gold-accent/10 flex items-center justify-center group-hover:bg-gold-accent/20 transition-colors">
+                                    <Users className="w-7 h-7 text-gold-accent" />
+                                </div>
+                                <div>
+                                    <p className="font-heading font-bold text-sepia-dark uppercase tracking-wider text-sm">All Seekers</p>
+                                    <p className="text-sepia-light text-xs mt-1">View all registered users, their Abhyasi IDs, roles, and approval status</p>
+                                </div>
+                            </Link>
+                            <Link
+                                href="/admin/logs"
+                                className="bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gold-accent/20 shadow-sm hover:shadow-md hover:border-gold-accent/50 transition-all group flex items-center gap-5"
+                            >
+                                <div className="w-14 h-14 rounded-full bg-gold-accent/10 flex items-center justify-center group-hover:bg-gold-accent/20 transition-colors">
+                                    <MessageSquare className="w-7 h-7 text-gold-accent" />
+                                </div>
+                                <div>
+                                    <p className="font-heading font-bold text-sepia-dark uppercase tracking-wider text-sm">Chat Logs</p>
+                                    <p className="text-sepia-light text-xs mt-1">Browse all seeker interactions — questions, responses, session IDs, and timestamps</p>
+                                </div>
+                            </Link>
+                        </div>
                     </section>
                 )}
 

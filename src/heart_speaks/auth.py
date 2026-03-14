@@ -97,10 +97,10 @@ def init_users_table() -> None:
         """)
         conn.commit()
 
-    # Create admin user if not exists (you)
+    # Always ensure the admin account has correct privileges (handles pre-existing accounts)
     with get_db() as conn:
         existing = conn.execute(
-            "SELECT * FROM users WHERE email = ?", ("vaibhav030@gmail.com",)
+            "SELECT user_id FROM users WHERE email = ?", ("vaibhav030@gmail.com",)
         ).fetchone()
         if not existing:
             conn.execute(
@@ -114,11 +114,18 @@ def init_users_table() -> None:
                     "Dhanani",
                     "vaibhav030@gmail.com",
                     "admin",
-                    pwd_context.hash("admin"),  # Change this after first login
-                    ),
+                    pwd_context.hash("admin"),
+                ),
             )
-            conn.commit()
             logger.info("Admin user created: vaibhav030@gmail.com")
+        else:
+            # Always enforce admin privileges even if account was previously a regular user
+            conn.execute(
+                "UPDATE users SET is_admin = 1, status = 'approved' WHERE email = ?",
+                ("vaibhav030@gmail.com",),
+            )
+            logger.info("Admin privileges enforced for: vaibhav030@gmail.com")
+        conn.commit()
 
 
 # --- Core Auth Functions ---
