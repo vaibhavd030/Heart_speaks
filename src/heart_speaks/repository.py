@@ -13,7 +13,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from google.cloud.firestore_v1.base_query import FieldFilter
+try:
+    from google.cloud.firestore import FieldFilter
+except ImportError:
+    from google.cloud.firestore_v1.base_query import FieldFilter
 from loguru import logger
 
 from heart_speaks.config import settings
@@ -309,16 +312,32 @@ def get_all_chat_logs(limit: int = 100, offset: int = 0) -> list[dict[str, Any]]
 
 
 def get_user_chat_logs(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
-    """Retrieves chat logs for a specific user from Firestore."""
+    """
+    Retrieves chat logs for a specific user from Firestore.
+    Sorts in-memory to avoid requiring a composite index on (user_id, created_at).
+    """
     db = get_firestore_client()
-    query = (
-        db.collection("chat_logs")
-        .where(filter=FieldFilter("user_id", "==", user_id))
-        .order_by("created_at", direction="DESCENDING")
-        .limit(limit)
-    )
-    docs = query.stream()
-    return [{**doc.to_dict(), "id": doc.id} for doc in docs]
+    logger.info(f"Fetching chat logs for user_id: {user_id}")
+    
+    # Simple query only requires a single-field index (automatic)
+    try:
+        query = (
+            db.collection("chat_logs")
+            .where(filter=FieldFilter("user_id", "==", user_id))
+            .limit(200) # Fetch more than limit to allow sorting then slicing
+        )
+        docs = query.stream()
+        logs = [{**doc.to_dict(), "id": doc.id} for doc in docs]
+        
+        logger.info(f"Retrieved {len(logs)} logs from Firestore for user {user_id}")
+        
+        # Sort in-memory: most recent first
+        logs.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+        
+        return logs[:limit]
+    except Exception as e:
+        logger.error(f"Error fetching logs for user {user_id}: {str(e)}")
+        return []
 
 
 def delete_chat_log(log_id: str, user_id: str | None = None) -> bool:

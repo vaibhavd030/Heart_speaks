@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MessageSquare, Search, ChevronDown, ChevronUp, User } from 'lucide-react';
-import { getAllChatLogs } from '@/lib/api';
+import { ArrowLeft, MessageSquare, Search, ChevronDown, ChevronUp, User, Trash2 } from 'lucide-react';
+import { getAllChatLogs, adminDeleteChatLog } from '@/lib/api';
 import { AuthGuard } from '@/components/AuthGuard';
 
 interface ChatLog {
-    id: number;
+    id: string;
     session_id: string;
     user_id: string;
     question: string;
@@ -24,7 +24,7 @@ export default function AdminLogsPage() {
     const [logs, setLogs] = useState<ChatLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
     const [page, setPage] = useState(0);
     const PAGE_SIZE = 50;
 
@@ -42,6 +42,19 @@ export default function AdminLogsPage() {
         };
         fetch();
     }, [page]);
+
+    const handleDelete = async (logId: string) => {
+        if (!confirm("Are you sure you want to delete this log entry? This action cannot be undone.")) return;
+        
+        try {
+            await adminDeleteChatLog(logId);
+            setLogs(prev => prev.filter(log => log.id !== logId));
+            if (expandedId === logId) setExpandedId(null);
+        } catch (error) {
+            console.error("Failed to delete log:", error);
+            alert("Failed to delete log entry.");
+        }
+    };
 
     const filtered = logs.filter(log =>
         log.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -138,9 +151,18 @@ export default function AdminLogsPage() {
                             {/* Expanded detail */}
                             {expandedId === log.id && (
                                 <div className="px-6 pb-6 border-t border-gold-accent/10 pt-4 space-y-4">
-                                    <div className="flex items-center gap-2 text-xs text-sepia-light">
-                                        <User className="w-3 h-3" />
-                                        {log.email} · Session: <span className="font-mono">{log.session_id}</span>
+                                    <div className="flex items-center justify-between gap-2 text-xs text-sepia-light">
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-3 h-3" />
+                                            {log.email} · Session: <span className="font-mono">{log.session_id}</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleDelete(log.id)}
+                                            className="flex items-center gap-1 text-red-500 hover:text-red-700 transition-colors font-heading uppercase tracking-tighter font-bold"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                            Delete Log
+                                        </button>
                                     </div>
 
                                     <div className="rounded-lg bg-gold-accent/5 border border-gold-accent/20 p-4">

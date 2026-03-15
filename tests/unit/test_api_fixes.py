@@ -8,9 +8,15 @@ class TestNewFeatures(unittest.TestCase):
         mock_db = MagicMock()
         mock_get_db.return_value = mock_db
         
-        mock_query = mock_db.collection.return_value.where.return_value.order_by.return_value.limit.return_value
+        # Match the new query structure: collection.where.limit
+        mock_query = mock_db.collection.return_value.where.return_value.limit.return_value
         mock_doc = MagicMock()
-        mock_doc.to_dict.return_value = {"question": "Q", "response": "R", "user_id": "u1"}
+        mock_doc.to_dict.return_value = {
+            "question": "Q", 
+            "response": "R", 
+            "user_id": "u1",
+            "created_at": "2024-03-15T12:00:00Z"
+        }
         mock_doc.id = "doc1"
         mock_query.stream.return_value = [mock_doc]
         

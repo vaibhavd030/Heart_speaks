@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MessageSquare, Clock, Trash2, Calendar, User, Search } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Clock, Trash2, Calendar, User, Search, RefreshCw, AlertCircle } from 'lucide-react';
 import { getUserChatLogs, deleteChatLog } from '@/lib/api';
 import { AuthGuard } from '@/components/AuthGuard';
 
@@ -17,6 +17,7 @@ interface ChatLog {
 export default function HistoryPage() {
     const [logs, setLogs] = useState<ChatLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -25,11 +26,13 @@ export default function HistoryPage() {
 
     const fetchLogs = async () => {
         setIsLoading(true);
+        setErrorMessage(null);
         try {
             const data = await getUserChatLogs();
             setLogs(data);
         } catch (error) {
             console.error("Failed to fetch chat logs:", error);
+            setErrorMessage("The records of your journey are currently beyond reach. Please try again in a moment.");
         } finally {
             setIsLoading(false);
         }
@@ -90,6 +93,18 @@ export default function HistoryPage() {
                     <div className="flex justify-center items-center py-20 opacity-70">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gold-accent"></div>
                     </div>
+                ) : errorMessage ? (
+                    <div className="bg-white/40 backdrop-blur-sm border border-red-500/20 rounded-2xl p-12 text-center text-red-500 font-serif italic">
+                        <AlertCircle className="mx-auto mb-4 opacity-50" size={32} />
+                        <p className="text-xl">{errorMessage}</p>
+                        <button 
+                            onClick={fetchLogs}
+                            className="mt-6 inline-flex items-center gap-2 text-gold-accent hover:text-sepia-dark transition-colors font-heading text-sm uppercase font-bold"
+                        >
+                            <RefreshCw size={16} />
+                            Retry Search
+                        </button>
+                    </div>
                 ) : filteredLogs.length === 0 ? (
                     <div className="bg-white/40 backdrop-blur-sm border border-gold-accent/20 rounded-2xl p-12 text-center text-ink/60 font-serif italic">
                         <p className="text-xl">Your journey is just beginning.</p>
@@ -106,11 +121,11 @@ export default function HistoryPage() {
                                         <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-heading text-ink/40">
                                             <span className="flex items-center gap-1">
                                                 <Calendar size={12} className="text-gold-accent/50" />
-                                                {new Date(log.created_at).toLocaleDateString()}
+                                                {log.created_at ? new Date(log.created_at).toLocaleDateString() : "Date Unknown"}
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <Clock size={12} className="text-gold-accent/50" />
-                                                {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {log.created_at ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Time Unknown"}
                                             </span>
                                         </div>
                                         <button 
