@@ -122,7 +122,6 @@ graph TD
 │   ├── components/      # Glassmorphic UI & Seeker Components
 │   └── lib/             # Elite API client with interceptors
 ├── tests/               # Professional Suite: Mocked Firestore unit tests
-├── All_Whispers_message/# The Source: Compressed PDF archive (4,600+ docs)
 └── pyproject.toml       # The Blueprint: Unified project dependencies
 ```
 
