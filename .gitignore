@@ -55,4 +55,5 @@ scripts/
 tests/eval/
 tests/logs/
 deploy.md
-sage.db
+sage.dbcontext.md
+my_prompt.md
