@@ -37,13 +37,15 @@ from heart_speaks.auth import (
     LoginRequest,
     RegisterRequest,
     approve_or_reject_user,
+    delete_user,
+    ensure_admin_exists,
     get_current_user,
-    init_users_table,
     list_all_users,
     list_pending_users,
     login_user,
     register_user,
     require_admin,
+    suspend_user,
 )
 from heart_speaks.repository import (
     delete_bookmark,
@@ -62,7 +64,7 @@ from heart_speaks.repository import init_db
 
 @app.on_event("startup")
 def startup_event():
-    init_users_table()
+    ensure_admin_exists()
     init_db()
 
 # Mount real storage location for PDFs
@@ -121,6 +123,14 @@ def approve_user(req: ApproveRequest, admin=Depends(require_admin)):
 def get_all_registered_users(admin=Depends(require_admin)):
     return list_all_users()
 
+@app.post("/admin/users/suspend")
+def suspend_user_endpoint(user_id: str, admin=Depends(require_admin)):
+    return suspend_user(user_id)
+
+@app.delete("/admin/users/{user_id}")
+def delete_user_endpoint(user_id: str, admin=Depends(require_admin)):
+    return delete_user(user_id)
+
 @app.get("/admin/logs")
 def get_chat_history(limit: int = 100, offset: int = 0, admin=Depends(require_admin)):
     return get_all_chat_logs(limit, offset)
@@ -159,7 +169,11 @@ def chat_endpoint(request: ChatRequest, user=Depends(get_current_user)) -> ChatR
             session_id=request.session_id,
             question=request.message,
             response=answer,
-            metadata=json.dumps({"sources_count": len(sources)})
+            metadata=json.dumps({"sources_count": len(sources)}),
+            first_name=user.get("first_name", ""),
+            last_name=user.get("last_name", ""),
+            email=user.get("email", ""),
+            abhyasi_id=user.get("abhyasi_id", ""),
         )
     except Exception as e:
         print(f"Failed to save chat log: {e}")
@@ -219,7 +233,11 @@ async def chat_stream_endpoint(request: ChatRequest, user=Depends(get_current_us
                 session_id=request.session_id,
                 question=request.message,
                 response=final_answer,
-                metadata=json.dumps({"streamed": True, "sources_count": len(final_sources)})
+                metadata=json.dumps({"streamed": True, "sources_count": len(final_sources)}),
+                first_name=user.get("first_name", ""),
+                last_name=user.get("last_name", ""),
+                email=user.get("email", ""),
+                abhyasi_id=user.get("abhyasi_id", ""),
             )
         except Exception as e:
             print(f"Failed to save streamed chat log: {e}")

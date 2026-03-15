@@ -159,3 +159,13 @@ export const getAllChatLogs = async (limit: number = 100, offset: number = 0) =>
     const response = await api.get('/admin/logs', { params: { limit, offset } });
     return response.data;
 };
+
+export const suspendUser = async (userId: string) => {
+    const response = await api.post(`/admin/users/suspend?user_id=${userId}`);
+    return response.data;
+};
+
+export const deleteUser = async (userId: string) => {
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+};

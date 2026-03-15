@@ -1,12 +1,12 @@
 """
-Authentication module for SAGE.
+Authentication module for Heart Speaks.
 
-Handles user registration, login, JWT tokens, and admin approval.
+All user data is stored in Firestore (persistent, cross-device, survives deployments).
+Uses JWT tokens (python-jose) and bcrypt password hashing (passlib).
 """
 
 import os
 import smtplib
-import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
@@ -14,165 +14,143 @@ from typing import Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from google.cloud.firestore_v1.base_query import FieldFilter
 from jose import JWTError, jwt
 from loguru import logger
 from passlib.context import CryptContext
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 from heart_speaks.config import settings
+from heart_speaks.firestore_db import get_firestore_client
+from heart_speaks.repository import delete_user_data
 
-# --- Password Hashing ---
-# Using pbkdf2_sha256 to avoid compatibility issues between passlib and bcrypt 4.0+
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-
-# --- JWT Config ---
+# --- Config ---
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY", settings.jwt_secret_key)
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 72  # 3 days for spiritual seekers, not a banking app
+ACCESS_TOKEN_EXPIRE_HOURS = 72
 
-security = HTTPBearer(auto_error=False)
+security = HTTPBearer()
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
+ADMIN_EMAIL = "vaibhav030@gmail.com"
+ADMIN_FIRST = "Vaibhav"
+ADMIN_LAST = "Dikshit"
+
 
 # --- Pydantic Models ---
 class RegisterRequest(BaseModel):
-    """Registration request from a new user."""
-
-    first_name: str = Field(..., min_length=1, max_length=100)
-    last_name: str = Field(..., min_length=1, max_length=100)
-    email: str = Field(..., min_length=5, max_length=200)
-    abhyasi_id: str = Field(..., min_length=3, max_length=50)
+    """User registration request."""
+    first_name: str
+    last_name: str
+    email: str
+    abhyasi_id: str
 
 
 class LoginRequest(BaseModel):
-    """Login request. Username is email, password is abhyasi_id."""
-
+    """User login request."""
     email: str
     password: str
 
 
-class TokenResponse(BaseModel):
-    """JWT token response after successful login."""
+class ApproveRequest(BaseModel):
+    """Admin request to approve or reject a user."""
+    email: str
+    action: str = Field(..., description="'approve' or 'reject'")
 
+
+class TokenResponse(BaseModel):
+    """JWT token response."""
     access_token: str
     token_type: str = "bearer"
     user: dict[str, Any]
 
 
-class ApproveRequest(BaseModel):
-    """Admin request to approve or reject a user."""
-
-    email: str
-    action: str = Field(..., description="'approve' or 'reject'")
+# --- Firestore helpers ---
+def _users_collection():
+    return get_firestore_client().collection("users")
 
 
-# --- Database Setup ---
-# Use the root-relative data directory from settings
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DB_PATH = os.path.join(BASE_DIR, settings.data_dir.replace("./", ""), "messages.db")
-
-def get_db() -> sqlite3.Connection:
-    """Returns a configured SQLite connection."""
-
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def _get_user_by_email(email: str) -> dict[str, Any] | None:
+    """Fetches a user document by email."""
+    docs = _users_collection().where(filter=FieldFilter("email", "==", email)).limit(1).stream()
+    for doc in docs:
+        return {**doc.to_dict(), "_doc_id": doc.id}
+    return None
 
 
-def init_users_table() -> None:
-    """Creates the users table if it does not exist."""
+def _get_user_by_id(user_id: str) -> dict[str, Any] | None:
+    """Fetches a user document by user_id field."""
+    doc = _users_collection().document(user_id).get()
+    if doc.exists:
+        return {**doc.to_dict(), "_doc_id": doc.id}
+    return None
 
-    with get_db() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                user_id TEXT PRIMARY KEY,
-                first_name TEXT NOT NULL,
-                last_name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                abhyasi_id TEXT NOT NULL,
-                password_hash TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'pending',
-                is_admin INTEGER NOT NULL DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        conn.commit()
 
-    # Always ensure the admin account has correct privileges (handles pre-existing accounts)
-    with get_db() as conn:
-        existing = conn.execute(
-            "SELECT user_id FROM users WHERE email = ?", ("vaibhav030@gmail.com",)
-        ).fetchone()
-        if not existing:
-            conn.execute(
-                """
-                INSERT INTO users (user_id, first_name, last_name, email, abhyasi_id, password_hash, status, is_admin)
-                VALUES (?, ?, ?, ?, ?, ?, 'approved', 1)
-            """,
-                (
-                    str(uuid.uuid4()),
-                    "Vaibhav",
-                    "Dikshit",
-                    "vaibhav030@gmail.com",
-                    "admin",
-                    pwd_context.hash("admin"),
-                ),
-            )
-            logger.info("Admin user created: vaibhav030@gmail.com")
-        else:
-            # Always enforce admin privileges and correct name even if account was previously a regular user
-            conn.execute(
-                "UPDATE users SET is_admin = 1, status = 'approved', first_name = 'Vaibhav', last_name = 'Dikshit' WHERE email = ?",
-                ("vaibhav030@gmail.com",),
-            )
-            logger.info("Admin privileges enforced for: vaibhav030@gmail.com")
-        conn.commit()
+# --- Admin bootstrap ---
+def ensure_admin_exists() -> None:
+    """
+    Ensures the admin account exists in Firestore with correct privileges.
+    Called once on startup. Safe to call multiple times.
+    """
+    db = get_firestore_client()
+    admin_ref = db.collection("users").document("admin")
+    doc = admin_ref.get()
+
+    if doc.exists:
+        # Always enforce correct admin flags and name
+        admin_ref.update({
+            "is_admin": True,
+            "status": "approved",
+            "first_name": ADMIN_FIRST,
+            "last_name": ADMIN_LAST,
+        })
+        logger.info("Admin privileges enforced for: vaibhav030@gmail.com")
+    else:
+        admin_ref.set({
+            "user_id": "admin",
+            "first_name": ADMIN_FIRST,
+            "last_name": ADMIN_LAST,
+            "email": ADMIN_EMAIL,
+            "abhyasi_id": "admin",
+            "password_hash": pwd_context.hash("admin"),
+            "status": "approved",
+            "is_admin": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        logger.info("Admin user created: vaibhav030@gmail.com")
 
 
 # --- Core Auth Functions ---
 def register_user(req: RegisterRequest) -> dict[str, str]:
     """Registers a new user with status 'pending'. Sends notification email to admin."""
 
-    init_users_table()
-
     # Check if email already exists
-    with get_db() as conn:
-        existing = conn.execute(
-            "SELECT * FROM users WHERE email = ?", (req.email,)
-        ).fetchone()
-        if existing:
-            raise HTTPException(
-                status_code=400, detail="An account with this email already exists."
-            )
+    if _get_user_by_email(req.email):
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
 
     # Hash the abhyasi_id as the default password
     password_hash = pwd_context.hash(req.abhyasi_id)
-
     user_id = str(uuid.uuid4())
-    with get_db() as conn:
-        conn.execute(
-            """
-            INSERT INTO users (user_id, first_name, last_name, email, abhyasi_id, password_hash, status)
-            VALUES (?, ?, ?, ?, ?, ?, 'pending')
-        """,
-            (user_id, req.first_name, req.last_name, req.email, req.abhyasi_id, password_hash),
-        )
-        conn.commit()
 
-    # Send notification email to admin
+    _users_collection().document(user_id).set({
+        "user_id": user_id,
+        "first_name": req.first_name,
+        "last_name": req.last_name,
+        "email": req.email,
+        "abhyasi_id": req.abhyasi_id,
+        "password_hash": password_hash,
+        "status": "pending",
+        "is_admin": False,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
     _send_admin_notification(req)
-
     return {"message": "Registration submitted. You will be notified once approved."}
 
 
 def login_user(req: LoginRequest) -> TokenResponse:
     """Authenticates a user and returns a JWT token."""
-
-    init_users_table()
-
-    with get_db() as conn:
-        user = conn.execute(
-            "SELECT * FROM users WHERE email = ?", (req.email,)
-        ).fetchone()
+    user = _get_user_by_email(req.email)
 
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password.")
@@ -187,15 +165,15 @@ def login_user(req: LoginRequest) -> TokenResponse:
         )
 
     if user["status"] == "rejected":
-        raise HTTPException(
-            status_code=403, detail="Your registration request was not approved."
-        )
+        raise HTTPException(status_code=403, detail="Your registration request was not approved.")
 
-    # Create JWT token
+    if user["status"] == "suspended":
+        raise HTTPException(status_code=403, detail="Your account has been suspended. Contact the admin.")
+
     token_data = {
         "sub": user["email"],
         "user_id": user["user_id"],
-        "is_admin": bool(user["is_admin"]),
+        "is_admin": bool(user.get("is_admin", False)),
         "exp": datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS),
     }
     access_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
@@ -207,7 +185,7 @@ def login_user(req: LoginRequest) -> TokenResponse:
             "first_name": user["first_name"],
             "last_name": user["last_name"],
             "email": user["email"],
-            "is_admin": bool(user["is_admin"]),
+            "is_admin": bool(user.get("is_admin", False)),
         },
     )
 
@@ -216,7 +194,6 @@ def get_current_user(
     credentials: Any = Depends(security),
 ) -> dict[str, Any]:
     """FastAPI dependency: extracts and validates the current user from the JWT token."""
-
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -229,30 +206,21 @@ def get_current_user(
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token."
-            )
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token."
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token.")
 
-    with get_db() as conn:
-        user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-
+    user = _get_user_by_email(email)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found."
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found.")
 
-    return dict(user)
+    return user
 
 
 def require_admin(
     user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
     """FastAPI dependency: ensures the current user is an admin."""
-
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required.")
     return user
@@ -260,53 +228,88 @@ def require_admin(
 
 def approve_or_reject_user(req: ApproveRequest) -> dict[str, str]:
     """Admin action: approve or reject a pending user."""
-
     if req.action not in ("approve", "reject"):
         raise HTTPException(status_code=400, detail="Action must be 'approve' or 'reject'.")
 
+    user = _get_user_by_email(req.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="No user found with that email.")
+
+    if user["status"] != "pending":
+        raise HTTPException(status_code=400, detail="User is not in pending status.")
+
     new_status = "approved" if req.action == "approve" else "rejected"
-
-    with get_db() as conn:
-        result = conn.execute(
-            "UPDATE users SET status = ? WHERE email = ? AND status = 'pending'",
-            (new_status, req.email),
-        )
-        conn.commit()
-
-    if result.rowcount == 0:
-        raise HTTPException(
-            status_code=404, detail="No pending user found with that email."
-        )
+    _users_collection().document(user["user_id"]).update({"status": new_status})
 
     return {"message": f"User {req.email} has been {new_status}."}
 
 
-def list_pending_users() -> list[dict[str, Any]]:
-    """Returns all users with status 'pending'."""
+def suspend_user(user_id: str) -> dict[str, str]:
+    """Admin action: suspend a user account."""
+    doc = _users_collection().document(user_id).get()
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="User not found.")
 
-    with get_db() as conn:
-        rows = conn.execute(
-            "SELECT user_id, first_name, last_name, email, abhyasi_id, created_at FROM users WHERE status = 'pending' ORDER BY created_at DESC"
-        ).fetchall()
-    return [dict(row) for row in rows]
+    _users_collection().document(user_id).update({"status": "suspended"})
+    return {"message": f"User {user_id} has been suspended."}
+
+
+def delete_user(user_id: str) -> dict[str, str]:
+    """Admin action: permanently delete a user and all their data."""
+    doc = _users_collection().document(user_id).get()
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Cascade delete all user data from Firestore
+    delete_user_data(user_id)
+
+    # Delete the user document itself
+    _users_collection().document(user_id).delete()
+
+    return {"message": f"User {user_id} and all their data have been deleted."}
+
+
+def list_pending_users() -> list[dict[str, Any]]:
+    """Returns all users with status 'pending', newest first."""
+    docs = _users_collection().where(filter=FieldFilter("status", "==", "pending")).stream()
+    users = []
+    for doc in docs:
+        d = doc.to_dict()
+        users.append({
+            "user_id": d.get("user_id"),
+            "first_name": d.get("first_name"),
+            "last_name": d.get("last_name"),
+            "email": d.get("email"),
+            "abhyasi_id": d.get("abhyasi_id"),
+            "created_at": d.get("created_at"),
+        })
+    users.sort(key=lambda u: u.get("created_at", ""), reverse=True)
+    return users
+
 
 def list_all_users() -> list[dict[str, Any]]:
-    """Returns all registered users with full metadata."""
+    """Returns all registered users with full metadata, newest first."""
+    docs = _users_collection().stream()
+    users = []
+    for doc in docs:
+        d = doc.to_dict()
+        users.append({
+            "user_id": d.get("user_id"),
+            "first_name": d.get("first_name"),
+            "last_name": d.get("last_name"),
+            "email": d.get("email"),
+            "abhyasi_id": d.get("abhyasi_id"),
+            "status": d.get("status"),
+            "is_admin": d.get("is_admin", False),
+            "created_at": d.get("created_at"),
+        })
+    users.sort(key=lambda u: u.get("created_at", ""), reverse=True)
+    return users
 
-    with get_db() as conn:
-        rows = conn.execute(
-            "SELECT user_id, first_name, last_name, email, abhyasi_id, status, is_admin, created_at FROM users ORDER BY created_at DESC"
-        ).fetchall()
-    return [dict(row) for row in rows]
 
 # --- Email Notification ---
 def _send_admin_notification(req: RegisterRequest) -> None:
-    """Sends a notification email to the admin about a new registration.
-
-    Uses Gmail SMTP. Requires GMAIL_APP_PASSWORD in env.
-    If not configured, logs the notification instead.
-    """
-
+    """Sends a notification email to the admin about a new registration."""
     gmail_password = os.environ.get("GMAIL_APP_PASSWORD", settings.gmail_app_password)
     admin_email = settings.admin_email
 
@@ -320,19 +323,10 @@ Time: {datetime.now(timezone.utc).isoformat()}
 
 To approve or reject, visit the Archive Dashboard:
 https://sage-frontend-34833003999.europe-west2.run.app/dashboard
-
-Or use the admin API:
-POST /admin/users/approve
-{{"email": "{req.email}", "action": "approve"}}
-
-Or reject:
-{{"email": "{req.email}", "action": "reject"}}
 """
 
     if not gmail_password:
-        logger.warning(
-            f"GMAIL_APP_PASSWORD not set. Registration notification NOT emailed. Details:\\n{body}"
-        )
+        logger.warning(f"GMAIL_APP_PASSWORD not set. Registration notification NOT emailed. Details:\n{body}")
         return
 
     try:

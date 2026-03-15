@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, CheckCircle, XCircle, Shield, Mail, User, Calendar } from 'lucide-react';
-import { getAllUsers, approveUser } from '@/lib/api';
+import { ArrowLeft, Users, CheckCircle, XCircle, Shield, Mail, User, Calendar, PauseCircle, Trash2 } from 'lucide-react';
+import { getAllUsers, approveUser, suspendUser, deleteUser } from '@/lib/api';
 import { AuthGuard } from '@/components/AuthGuard';
 import { clsx } from 'clsx';
 
@@ -13,7 +13,7 @@ interface UserData {
     last_name: string;
     email: string;
     abhyasi_id: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'suspended';
     is_admin: boolean;
     created_at: string;
 }
@@ -36,35 +36,68 @@ export default function AdminUsersPage() {
         }
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+    useEffect(() => { fetchUsers(); }, []);
 
-    const handleAction = async (email: string, action: 'approve' | 'reject') => {
+    const showMsg = (type: 'success' | 'error', text: string) => {
+        setMessage({ type, text });
+        setTimeout(() => setMessage(null), 3000);
+    };
+
+    const handleApproveReject = async (email: string, action: 'approve' | 'reject') => {
         try {
             await approveUser(email, action);
-            setMessage({ type: 'success', text: `User ${action}ed successfully` });
+            showMsg('success', `User ${action}ed successfully`);
             fetchUsers();
         } catch (error) {
             console.error(`Failed to ${action} user:`, error);
-            setMessage({ type: 'error', text: `Failed to ${action} user` });
+            showMsg('error', `Failed to ${action} user`);
         }
     };
+
+    const handleSuspend = async (userId: string, name: string) => {
+        if (!window.confirm(`Suspend ${name}? They will not be able to log in.`)) return;
+        try {
+            await suspendUser(userId);
+            showMsg('success', `${name} has been suspended`);
+            fetchUsers();
+        } catch (error) {
+            console.error('Failed to suspend user:', error);
+            showMsg('error', 'Failed to suspend user');
+        }
+    };
+
+    const handleDelete = async (userId: string, name: string) => {
+        if (!window.confirm(`⚠️ Permanently delete ${name} and ALL their data (bookmarks, chat history, progress)? This cannot be undone.`)) return;
+        try {
+            await deleteUser(userId);
+            showMsg('success', `${name} and all their data have been deleted`);
+            fetchUsers();
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+            showMsg('error', 'Failed to delete user');
+        }
+    };
+
+    const statusBadge = (status: string) => clsx(
+        "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
+        status === 'approved' ? "bg-green-100 text-green-700" :
+        status === 'pending' ? "bg-yellow-100 text-yellow-700" :
+        status === 'suspended' ? "bg-orange-100 text-orange-700" :
+        "bg-red-100 text-red-700"
+    );
 
     return (
         <AuthGuard requireAdmin>
             <div className="min-h-screen bg-parchment-light">
                 {/* Header */}
                 <header className="bg-white/80 backdrop-blur-md sticky top-0 z-10 border-b border-gold-accent/20">
-                    <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link href="/dashboard" className="p-2 hover:bg-gold-accent/10 rounded-full transition-colors text-sepia-dark">
-                                <ArrowLeft className="w-5 h-5" />
-                            </Link>
-                            <div className="flex items-center gap-2">
-                                <Users className="w-6 h-6 text-gold-accent" />
-                                <h1 className="text-xl font-heading font-bold text-sepia-dark uppercase tracking-wider">User Management</h1>
-                            </div>
+                    <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
+                        <Link href="/dashboard" className="p-2 hover:bg-gold-accent/10 rounded-full transition-colors text-sepia-dark">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Link>
+                        <div className="flex items-center gap-2">
+                            <Users className="w-6 h-6 text-gold-accent" />
+                            <h1 className="text-xl font-heading font-bold text-sepia-dark uppercase tracking-wider">User Management</h1>
                         </div>
                     </div>
                 </header>
@@ -95,17 +128,9 @@ export default function AdminUsersPage() {
                                 </thead>
                                 <tbody>
                                     {isLoading ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-sepia-light italic">
-                                                Consulting the registers...
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-sepia-light italic">Consulting the registers...</td></tr>
                                     ) : users.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-12 text-center text-sepia-light italic">
-                                                No spiritual seekers found in the records.
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan={6} className="px-6 py-12 text-center text-sepia-light italic">No spiritual seekers found in the records.</td></tr>
                                     ) : (
                                         users.map((user) => (
                                             <tr key={user.user_id} className="border-b border-gold-accent/10 hover:bg-gold-accent/5 transition-colors">
@@ -122,31 +147,16 @@ export default function AdminUsersPage() {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm font-medium text-sepia-dark uppercase tracking-tight font-mono">
-                                                    {user.abhyasi_id}
-                                                </td>
+                                                <td className="px-6 py-4 text-sm font-medium text-sepia-dark uppercase tracking-tight font-mono">{user.abhyasi_id}</td>
                                                 <td className="px-6 py-4">
-                                                    <span className={clsx(
-                                                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
-                                                        user.status === 'approved' ? "bg-green-100 text-green-700" :
-                                                        user.status === 'pending' ? "bg-yellow-100 text-yellow-700" :
-                                                        "bg-red-100 text-red-700"
-                                                    )}>
-                                                        {user.status}
-                                                    </span>
+                                                    <span className={statusBadge(user.status)}>{user.status}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-1 text-sm text-sepia-dark">
                                                         {user.is_admin ? (
-                                                            <>
-                                                                <Shield className="w-3 h-3 text-gold-accent" />
-                                                                <span className="font-semibold text-gold-accent">Admin</span>
-                                                            </>
+                                                            <><Shield className="w-3 h-3 text-gold-accent" /><span className="font-semibold text-gold-accent">Admin</span></>
                                                         ) : (
-                                                            <>
-                                                                <User className="w-3 h-3 text-sepia-light" />
-                                                                <span>Seeker</span>
-                                                            </>
+                                                            <><User className="w-3 h-3 text-sepia-light" /><span>Seeker</span></>
                                                         )}
                                                     </div>
                                                 </td>
@@ -157,21 +167,35 @@ export default function AdminUsersPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {user.status === 'pending' && (
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => handleAction(user.email, 'approve')}
-                                                                className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
-                                                                title="Approve User"
-                                                            >
-                                                                <CheckCircle className="w-4 h-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleAction(user.email, 'reject')}
-                                                                className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
-                                                                title="Reject User"
-                                                            >
-                                                                <XCircle className="w-4 h-4" />
+                                                    {!user.is_admin && (
+                                                        <div className="flex gap-2 flex-wrap">
+                                                            {user.status === 'pending' && (
+                                                                <>
+                                                                    <button onClick={() => handleApproveReject(user.email, 'approve')}
+                                                                        className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors" title="Approve">
+                                                                        <CheckCircle className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button onClick={() => handleApproveReject(user.email, 'reject')}
+                                                                        className="p-1.5 bg-red-400 hover:bg-red-500 text-white rounded transition-colors" title="Reject">
+                                                                        <XCircle className="w-4 h-4" />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {user.status === 'approved' && (
+                                                                <button onClick={() => handleSuspend(user.user_id, `${user.first_name} ${user.last_name}`)}
+                                                                    className="p-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded transition-colors" title="Suspend">
+                                                                    <PauseCircle className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            {user.status === 'suspended' && (
+                                                                <button onClick={() => handleApproveReject(user.email, 'approve')}
+                                                                    className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded transition-colors" title="Reinstate">
+                                                                    <CheckCircle className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            <button onClick={() => handleDelete(user.user_id, `${user.first_name} ${user.last_name}`)}
+                                                                className="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded transition-colors" title="Delete permanently">
+                                                                <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     )}
