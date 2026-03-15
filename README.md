@@ -106,16 +106,6 @@ graph TD
 
 ---
 
-## 🔐 Admin Command Center
-
-Designed for the stewards of the archive, the Admin Panel provides complete control over the sanctuary's integrity.
-*   **Gated Entry**: Every seeker must be vetted. Admins receive real-time email alerts via Gmail SMTP for every registration request.
-*   **Seeker Lifecycle**: Approve, Reject, **Suspend**, or **Permanently Delete** users with one click.
-*   **Cascade Privacy**: Deleting a user account triggers an atomic cascade that erases all their personal Firestore data (bookmarks, reading history) instantly.
-*   **Audit Trails**: Detailed chat logs allow admins to monitor the system's guidance and ensure quality.
-
----
-
 ## 📂 Elite Repository Organization
 
 ```text
