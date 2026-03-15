@@ -1,8 +1,8 @@
 <div align="center">
-
-![SAGE Logo](/Users/vaibhavdikshit/.gemini/antigravity/brain/4b13c2d1-eeb1-4496-9568-9d37e14e2faa/sage_logo_gold_white_lightening_1773568217181.png)
-
-![SAGE Banner](/Users/vaibhavdikshit/.gemini/antigravity/brain/4b13c2d1-eeb1-4496-9568-9d37e14e2faa/sage_banner_premium_1773567466444.png)
+ 
+![SAGE Logo](./assets/logo.png)
+ 
+![SAGE Banner](./assets/banner.png)
 
 # SAGE: Spiritual Archive Guidance Engine
 ### *The Oracle in the Cloud. The Sanctuary in your Pocket.*
