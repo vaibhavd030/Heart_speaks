@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Search, BookOpen, BarChart3, Loader2, Users, MessageSquare, Shield } from 'lucide-react';
+import { ArrowLeft, Search, BookOpen, BarChart3, Loader2, Users, MessageSquare, Shield, Clock } from 'lucide-react';
 import { getIsAdmin } from '@/lib/auth';
 import {
     BarChart,
@@ -198,6 +198,40 @@ export default function Dashboard() {
                         <PendingApprovals />
                     </section>
                 )}
+
+                {/* Seeker Features */}
+                <section>
+                    <div className="flex items-center gap-3 mb-6">
+                        <MessageSquare className="text-gold-accent" />
+                        <h2 className="text-3xl font-serif italic">My Personal Journey</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Link
+                            href="/history"
+                            className="bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gold-accent/20 shadow-sm hover:shadow-md hover:border-gold-accent/50 transition-all group flex items-center gap-5"
+                        >
+                            <div className="w-14 h-14 rounded-full bg-gold-accent/10 flex items-center justify-center group-hover:bg-gold-accent/20 transition-colors">
+                                <Clock className="w-7 h-7 text-gold-accent" />
+                            </div>
+                            <div>
+                                <p className="font-heading font-bold text-sepia-dark uppercase tracking-wider text-sm">Inquiry History</p>
+                                <p className="text-sepia-light text-xs mt-1">Review all your past questions and the guidance shared by SAGE</p>
+                            </div>
+                        </Link>
+                        <Link
+                            href="/bookmarks"
+                            className="bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-gold-accent/20 shadow-sm hover:shadow-md hover:border-gold-accent/50 transition-all group flex items-center gap-5"
+                        >
+                            <div className="w-14 h-14 rounded-full bg-gold-accent/10 flex items-center justify-center group-hover:bg-gold-accent/20 transition-colors">
+                                <BookOpen className="w-7 h-7 text-gold-accent" />
+                            </div>
+                            <div>
+                                <p className="font-heading font-bold text-sepia-dark uppercase tracking-wider text-sm">Saved Reflections</p>
+                                <p className="text-sepia-light text-xs mt-1">Access your bookmarked whispers and personal study notes</p>
+                            </div>
+                        </Link>
+                    </div>
+                </section>
 
                 {/* Admin Sanctum — only for admins */}
                 {isAdmin && (

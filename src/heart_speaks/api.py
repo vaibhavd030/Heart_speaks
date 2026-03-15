@@ -49,8 +49,10 @@ from heart_speaks.auth import (
 )
 from heart_speaks.repository import (
     delete_bookmark,
+    delete_chat_log,
     get_all_chat_logs,
     get_bookmarks,
+    get_user_chat_logs,
     get_progress,
     get_reader_sequence,
     get_stats,
@@ -250,6 +252,22 @@ def health_check() -> dict[str, str]:
     return {"status": "healthy"}
 
 
+@app.get("/chat/logs")
+def get_user_logs(user=Depends(get_current_user)) -> list[dict[str, Any]]:
+    """Returns chat logs for the authenticated user."""
+    return get_user_chat_logs(user["user_id"])
+
+
+@app.delete("/chat/logs/{log_id}")
+def remove_chat_log(log_id: str, user=Depends(get_current_user)) -> dict[str, str]:
+    """Allows a user to delete their own chat log."""
+    from fastapi import HTTPException
+    success = delete_chat_log(log_id, user_id=user["user_id"])
+    if not success:
+        raise HTTPException(status_code=404, detail="Log not found or not owned by user")
+    return {"status": "success"}
+
+
 @app.get("/stats")
 def get_dashboard_stats(user=Depends(get_current_user)) -> dict[str, Any]:
     return get_stats()
@@ -292,7 +310,17 @@ def save_reader_bookmark(request: BookmarkRequest, user=Depends(get_current_user
     return {"status": "success"}
 
 
-@app.delete("/reader/bookmarks/{source_file}")
+@app.delete("/reader/bookmarks/{source_file:path}")
 def remove_reader_bookmark(source_file: str, user=Depends(get_current_user)) -> dict[str, str]:
     delete_bookmark(user["user_id"], source_file)
+    return {"status": "success"}
+
+
+@app.delete("/admin/logs/{log_id}")
+def admin_remove_chat_log(log_id: str, admin=Depends(require_admin)) -> dict[str, str]:
+    """Allows an admin to delete any chat log."""
+    from fastapi import HTTPException
+    success = delete_chat_log(log_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Log not found")
     return {"status": "success"}

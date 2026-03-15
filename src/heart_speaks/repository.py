@@ -296,7 +296,7 @@ def save_chat_log(
 
 
 def get_all_chat_logs(limit: int = 100, offset: int = 0) -> list[dict[str, Any]]:
-    """Retrieves chat logs from Firestore ordered by most recent."""
+    """Retrieves all chat logs from Firestore for admin auditing."""
     db = get_firestore_client()
     query = (
         db.collection("chat_logs")
@@ -306,6 +306,39 @@ def get_all_chat_logs(limit: int = 100, offset: int = 0) -> list[dict[str, Any]]
     )
     docs = query.stream()
     return [{**doc.to_dict(), "id": doc.id} for doc in docs]
+
+
+def get_user_chat_logs(user_id: str, limit: int = 50) -> list[dict[str, Any]]:
+    """Retrieves chat logs for a specific user from Firestore."""
+    db = get_firestore_client()
+    query = (
+        db.collection("chat_logs")
+        .where(filter=FieldFilter("user_id", "==", user_id))
+        .order_by("created_at", direction="DESCENDING")
+        .limit(limit)
+    )
+    docs = query.stream()
+    return [{**doc.to_dict(), "id": doc.id} for doc in docs]
+
+
+def delete_chat_log(log_id: str, user_id: str | None = None) -> bool:
+    """
+    Removes a specific chat log from Firestore.
+    If user_id is provided, ensures the log belongs to that user.
+    """
+    db = get_firestore_client()
+    doc_ref = db.collection("chat_logs").document(log_id)
+    doc = doc_ref.get()
+    
+    if not doc.exists:
+        return False
+        
+    data = doc.to_dict()
+    if user_id and data.get("user_id") != user_id:
+        return False
+        
+    doc_ref.delete()
+    return True
 
 
 def delete_user_data(user_id: str) -> None:

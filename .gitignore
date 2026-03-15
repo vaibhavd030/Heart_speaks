@@ -57,3 +57,5 @@ tests/logs/
 deploy.md
 sage.dbcontext.md
 my_prompt.md
+context.md
+sage.db
