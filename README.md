@@ -1,8 +1,6 @@
 <div align="center">
  
-![SAGE Logo](./assets/logo.png)
- 
-![SAGE Banner](./assets/banner.png)
+<img src="./assets/banner.png" alt="SAGE Banner" width="400">
 
 # SAGE: Spiritual Archive Guidance Engine
 ### *The Oracle in the Cloud. The Sanctuary in your Pocket.*
